@@ -54,9 +54,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.border
 
 
 // 메시지 데이터 클래스
@@ -181,7 +180,6 @@ fun InboxScreen(navController: NavController) {
 
 @Composable
 fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
-    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,16 +187,16 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = message.avatarRes),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+        // ⚡️ 설정 아이콘 제거 후, 밝은 하늘색 원으로 대체
+        Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFE6F0FA)) // 연한 블루 느낌 배경
+                .background(Color(0xFFAFDAFF)) // 밝은 하늘색
         )
+
         Spacer(modifier = Modifier.width(12.dp))
+
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = message.name,
@@ -211,6 +209,7 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
                 color = Color.DarkGray
             )
         }
+
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = message.time,
@@ -232,25 +231,27 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
     }
 }
 
+
 @Composable
 fun ChatScreen(navController: NavController?, userId: String) {
     val context = LocalContext.current
     var isLiked by remember { mutableStateOf(false) }
     var isDisliked by remember { mutableStateOf(false) }
+
     val chatMessages = remember {
         when (userId) {
             "rabbit" -> listOf(
                 ChatMessage(
                     content = "네 말도 중요하지만 상대의 말이 끝난 다음에 이야기\n 해주면 소통이 더 잘 될 것 같아.\n 상대방의 말을 조금만 더 들어줬으면 좋겠어.",
                     isFromMe = false,
-                    time = "오후 2:34"
+                    time = ""
                 )
             )
             else -> listOf(
                 ChatMessage(
                     content = "안녕하세요! 메시지를 확인해주세요.",
                     isFromMe = false,
-                    time = "오후 2:30"
+                    time = ""
                 )
             )
         }
@@ -264,117 +265,112 @@ fun ChatScreen(navController: NavController?, userId: String) {
         else -> "사용자"
     }
 
-    // 피드백 상태는 위에서 선언했으므로 중복 선언 제거
-
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(Color(0xFFE6F0FA))
-    ) {
-        // Top App Bar with back button
-        TopAppBar(
-            title = {
-                Text(
-                    text = userName,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = {
-                    if (navController != null) {
-                        navController.popBackStack()
-                    } else {
-                        (context as? ComponentActivity)?.finish()
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-            },
-            backgroundColor = Color.White,
-            elevation = 0.dp
-        )
-
-        // Chat messages
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFE6F0FA))
         ) {
-            items(chatMessages) { message ->
-                ChatMessageItem(message)
-            }
-
-            if (userId == "rabbit") {
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    FeedbackRatingCard(
-                        isLiked = isLiked,
-                        isDisliked = isDisliked,
-                        onLikeClick = {
-                            isLiked = !isLiked
-                            if (isLiked) isDisliked = false
-                        },
-                        onDislikeClick = {
-                            isDisliked = !isDisliked
-                            if (isDisliked) isLiked = false
-                        },
-                        onFeedbackClick = {
-                            // 피드백 작성 화면으로 이동
-                            if (navController != null) {
-                                navController.navigate("feedback/rabbit")
-                            } else {
-                                val intent = Intent(context, Back::class.java)
-                                intent.putExtra("screenType", "feedback")
-                                intent.putExtra("receiverName", "잠만 자는 토끼")
-                                context.startActivity(intent)
-                            }
+            // Top App Bar with back button (설정 버튼 제거)
+            TopAppBar(
+                title = {
+                    Text(
+                        text = userName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        if (navController != null) {
+                            navController.popBackStack()
+                        } else {
+                            (context as? ComponentActivity)?.finish()
                         }
-                    )
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                backgroundColor = Color.White,
+                elevation = 0.dp
+            )
+
+            // 상단바와 채팅 메시지 사이에 공백 추가
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Chat messages
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(chatMessages) { message ->
+                    ChatMessageItem(message)
+                }
+
+                if (userId == "rabbit") {
+                    item {
+                        Spacer(modifier = Modifier.height(170.dp))
+                        FeedbackRatingCard(
+                            isLiked = isLiked,
+                            isDisliked = isDisliked,
+                            onLikeClick = {
+                                isLiked = !isLiked
+                                if (isLiked) isDisliked = false
+                            },
+                            onDislikeClick = {
+                                isDisliked = !isDisliked
+                                if (isDisliked) isLiked = false
+                            },
+                            onFeedbackClick = {
+                                // 피드백 작성 화면으로 이동
+                                if (navController != null) {
+                                    navController.navigate("feedback/rabbit")
+                                } else {
+                                    val intent = Intent(context, Back::class.java)
+                                    intent.putExtra("screenType", "feedback")
+                                    intent.putExtra("receiverName", "잠만 자는 토끼")
+                                    context.startActivity(intent)
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
 
-
-
-        // Bottom message input (placeholder, not functional)
-        Row(
+        // 오른쪽 하단에 설정 FAB 추가
+        ExpandableFabExample(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("메시지를 입력하세요") },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                )
-            )
-            IconButton(
-                onClick = {},
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color(0xFF5EA7FF), CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Send",
-                    tint = Color.White
-                )
-            }
-        }
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        )
+    }
+}
+
+@Composable
+fun SettingsItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { }
+            .padding(vertical = 12.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Color(0xFF5EA7FF),
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = text,
+            fontSize = 14.sp
+        )
     }
 }
 
@@ -384,94 +380,97 @@ fun FeedbackRatingCard(
     isDisliked: Boolean,
     onLikeClick: () -> Unit,
     onDislikeClick: () -> Unit,
-    onFeedbackClick: () -> Unit  // 피드백 남기기 버튼 클릭 핸들러 추가
+    onFeedbackClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = Color(0xFFAFDAFF),
-        shape = RoundedCornerShape(12.dp),
-        elevation = 0.dp
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // 피드백 평가 카드
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            backgroundColor = Color(0xFFAFDAFF),
+            shape = RoundedCornerShape(12.dp),
+            elevation = 0.dp,
         ) {
-            Text(
-                text = "이 피드백에 대한 평가를 남겨주세요!",
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                // 좋아요 버튼
-                IconButton(
-                    onClick = onLikeClick,
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(
-                            color = if (isLiked) Color(0xFF5EA7FF) else Color.White,
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ThumbUp,
-                        contentDescription = "Like",
-                        tint = if (isLiked) Color.White else Color.Gray,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                // 싫어요 버튼
-                IconButton(
-                    onClick = onDislikeClick,
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(
-                            color = if (isDisliked) Color(0xFF5EA7FF) else Color.White,
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ThumbDown,
-                        contentDescription = "Dislike",
-                        tint = if (isDisliked) Color.White else Color.Gray,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            // 카드 하단에 피드백 남기기 버튼 추가
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.Start
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextButton(
-                    onClick = onFeedbackClick,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color(0xFF5EA7FF)
-                    )
+                Text(
+                    text = "이 피드백에 대한 평가를 남겨주세요!",
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Create,
-                        contentDescription = "피드백 작성",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "피드백 남기기",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    // 좋아요 버튼
+                    IconButton(
+                        onClick = onLikeClick,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(
+                                color = if (isLiked) Color(0xFF5EA7FF) else Color.White,
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ThumbUp,
+                            contentDescription = "Like",
+                            tint = if (isLiked) Color.White else Color.Gray,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    // 싫어요 버튼
+                    IconButton(
+                        onClick = onDislikeClick,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(
+                                color = if (isDisliked) Color(0xFF5EA7FF) else Color.White,
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ThumbDown,
+                            contentDescription = "Dislike",
+                            tint = if (isDisliked) Color.White else Color.Gray,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
+            }
+        }
+
+        // 카드 밖 오른쪽 하단에 피드백 남기기 버튼 배치
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, end = 4.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            TextButton(
+                onClick = onFeedbackClick,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = Color(0xFF5EA7FF)
+                ),
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = Color.LightGray,
+                    shape = RoundedCornerShape(8.dp)
+                )
+            ) {
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    text = "피드백 남기기",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
@@ -484,7 +483,7 @@ fun ChatMessageItem(message: ChatMessage) {
         contentAlignment = if (message.isFromMe) Alignment.CenterEnd else Alignment.CenterStart
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             horizontalArrangement = if (message.isFromMe) Arrangement.End else Arrangement.Start,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -496,7 +495,7 @@ fun ChatMessageItem(message: ChatMessage) {
                         .background(Color.Yellow, CircleShape)
                         .padding(end = 8.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(16.dp))
             }
 
             Column(
@@ -563,14 +562,19 @@ fun ExpandableFabExample(modifier: Modifier = Modifier) {
                 MiniFab(icon = Icons.Default.Settings, onClick = {})
                 MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {})
                 MiniFab(icon = Icons.Default.Email, onClick = {})
-                MiniFab(icon = Icons.Default.Lock, onClick = {})
+                // 자물쇠 아이콘을 투표 관련 아이콘으로 변경
+                MiniFab(icon = Icons.Default.HowToVote, onClick = {})
                 MiniFab(icon = Icons.Default.Person, onClick = {})
             }
         }
-        FloatingActionButton(onClick = { expanded = !expanded }) {
+        FloatingActionButton(
+            onClick = { expanded = !expanded },
+            backgroundColor = Color.LightGray  // 배경색을 회색으로 변경
+        ) {
             Icon(
                 imageVector = if (expanded) Icons.Default.Close else Icons.Default.MoreVert,
-                contentDescription = null
+                contentDescription = null,
+                tint = Color.Black  // 아이콘 색상을 검정색으로 변경
             )
         }
     }
@@ -585,7 +589,8 @@ private fun MiniFab(
     androidx.compose.material3.FloatingActionButton(
         onClick = onClick,
         modifier = Modifier.size(40.dp),
-        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.primary
+        containerColor = Color.LightGray,  // 미니 FAB 배경색도 회색으로 변경
+        contentColor = Color.Black  // 미니 FAB 아이콘 색상도 검정색으로 변경
     ) {
         Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
     }
@@ -628,99 +633,125 @@ fun FeedbackWriteScreen(navController: NavController?, receiverName: String) {
     val context = LocalContext.current
     var feedbackText by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFE6F0FA))
-    ) {
-        // 상단 앱바
-        TopAppBar(
-            title = {
-                Text(
-                    text = "피드백 작성",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = {
-                    if (navController != null) {
-                        navController.popBackStack()
-                    } else {
-                        (context as? ComponentActivity)?.finish()
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-            },
-            backgroundColor = Color.White,
-            elevation = 0.dp
-        )
-
-        // 피드백 작성 영역
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .weight(1f)
+                .background(Color(0xFFE6F0FA))
         ) {
-            // 대상 텍스트
-            Text(
-                text = "잠만 자는 토끼에게 하고 싶은 말",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // 피드백 입력 필드
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = 0.dp,
-                shape = RoundedCornerShape(12.dp),
-                backgroundColor = Color.White
-            ) {
-                TextField(
-                    value = feedbackText,
-                    onValueChange = { feedbackText = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 200.dp),
-                    placeholder = { Text("상대방에게 피드백을 작성해주세요.") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+            // 상단 앱바
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "피드백 작성",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
                     )
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // 제출 버튼
-            Button(
-                onClick = {
-                    // 피드백 제출 (여기서는 이전 화면으로 돌아가는 기능만 구현)
-                    if (navController != null) {
-                        navController.popBackStack()
-                    } else {
-                        (context as? ComponentActivity)?.finish()
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        if (navController != null) {
+                            navController.popBackStack()
+                        } else {
+                            (context as? ComponentActivity)?.finish()
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 },
+                backgroundColor = Color.White,
+                elevation = 0.dp
+            )
+
+            Spacer(modifier = Modifier.height(50.dp))
+
+            // 피드백 작성 영역
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5EA7FF))
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 대상 텍스트
                 Text(
-                    text = "피드백 보내기",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    text = "잠만 자는 토끼에게 하고 싶은 말",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    textAlign = TextAlign.Center
                 )
+
+                // 피드백 입력 필드
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = 0.dp,
+                    shape = RoundedCornerShape(12.dp),
+                    backgroundColor = Color.White
+                ) {
+                    TextField(
+                        value = feedbackText,
+                        onValueChange = { feedbackText = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 200.dp),
+                        placeholder = { Text("상대방에게 피드백을 작성해주세요.") },
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 전송 버튼 영역 (피드백 남기기 버튼과 동일한 스타일로 변경)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 8.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    TextButton(
+                        onClick = {
+                            // 피드백 제출 후 이전 화면으로 돌아가기
+                            if (navController != null) {
+                                navController.popBackStack()
+                            } else {
+                                (context as? ComponentActivity)?.finish()
+                            }
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color(0xFF5EA7FF)
+                        ),
+                        modifier = Modifier.border(
+                            width = 1.dp,
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    ) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "send",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
         }
+
+        // 오른쪽 하단에 설정 FAB 추가
+        ExpandableFabExample(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        )
     }
 }
