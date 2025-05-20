@@ -43,17 +43,18 @@ data class Message(
     val content: String,
     val time: String
 )
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SendScreen(messages: List<Message>) {
+fun SendScreen(
+    messages: List<Message>
+) {
     var searchQuery by remember { mutableStateOf("") }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(
-                    text = "보낸 메시지",
-                    fontWeight = FontWeight.Black,
-                ) }
+                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black) }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(16.dp))
@@ -68,20 +69,15 @@ fun SendScreen(messages: List<Message>) {
             ) {
                 CenteredVerticalSearchField()
             }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                LazyColumn{
-                    items(messages.filter {
-                        it.name.contains(searchQuery, ignoreCase = true)
-                    }) { msg ->
-                        MessageItem(msg)
-                    }
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(messages.filter {
+                    it.name.contains(searchQuery, ignoreCase = true)
+                }) { msg ->
+                    MessageItem(msg = msg)
                 }
-
-
-    }
-        // 확장 FAB
+            }
+        }
         ExpandableFabExample(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -91,11 +87,14 @@ fun SendScreen(messages: List<Message>) {
 }
 
 @Composable
-private fun MessageItem(msg: Message) {
+private fun MessageItem(
+    msg: Message
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
@@ -108,8 +107,16 @@ private fun MessageItem(msg: Message) {
         )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = msg.name, style = MaterialTheme.typography.bodyLarge)
-            Text(text = msg.content, style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
+            Text(
+                text = msg.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Black
+            )
+            Text(
+                text = msg.content,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray
+            )
         }
         Text(text = msg.time, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
     }
