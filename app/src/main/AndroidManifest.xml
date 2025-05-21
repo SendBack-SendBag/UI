@@ -23,6 +23,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity
+                android:name=".Back"
+                android:exported="false"
+                android:label="메시지 상세"
+                android:theme="@style/Theme.SendBackSendBag">
+        </activity>
     </application>
 
 </manifest>
