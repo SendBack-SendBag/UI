@@ -29,17 +29,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sendbacksendbag.R
+import androidx.navigation.NavHostController
 
 import androidx.compose.runtime.Composable
 
 
 @Composable
-fun Sended(){
+fun Sended(navHostController: NavHostController){
     FeedbackDetailScreen(
         userName = "박지열",
         message = "네 말은 중요하지만 상대의 말이 끝난 다음에 이야기해주면 소통이 더 잘될 것 같아.\n상대방의 말을 조금만 더 들어줬으면 좋겠어.",
-        onBack = { /* 뒤로가기 */ },
-        onFabClick = { /* 메뉴 클릭 */ }
+        onBack = { navHostController.popBackStack()  },
+        onFabClick = { /* 메뉴 클릭 */ },
+        navController = navHostController
     )
 }
 
@@ -49,6 +51,7 @@ fun FeedbackDetailScreen(
     userName: String,
     message: String,
     time: String = "",
+    navController: NavHostController,
     onBack: () -> Unit = {},
     onFabClick: () -> Unit = {}
 ) {
@@ -119,6 +122,7 @@ fun FeedbackDetailScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
+            , navController
         )
     }
 }

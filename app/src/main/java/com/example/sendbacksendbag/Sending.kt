@@ -1,3 +1,4 @@
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,12 +12,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Sending(
     userName: String = "박지열",
     message: String ="니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;",
+    navController: NavHostController,
     onBack: () -> Unit = {},
     onCategory: () -> Unit = {},
     onSend: () -> Unit = {}
@@ -86,15 +89,27 @@ fun Sending(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Button(onClick = onSend) {
-                Text(text = "send")
+            Button(
+                onClick = onSend,
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.Gray),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFD6E9FA)
+                ),
+                modifier = Modifier.size(63.dp, 36.dp)
+            ){
+                Text(
+                    text = "send",
+                    color = Color.Black,
+                )
             }
         }
     }
     ExpandableFabExample(
         modifier = Modifier
             .align(Alignment.BottomEnd)
-            .padding(16.dp)
+            .padding(16.dp),
+        navController
     )
 }
 }

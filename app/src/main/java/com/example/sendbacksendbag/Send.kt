@@ -35,6 +35,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sendbacksendbag.R
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.NavController
 
 // 메시지 데이터 모델
 data class Message(
@@ -43,11 +47,27 @@ data class Message(
     val content: String,
     val time: String
 )
+@Composable
+fun AppNavGraph() {
+    val navController = rememberNavController()
+    NavHost(
+        navController = navController,
+        startDestination = "send"
+    ) {
+        composable("send") {
+            Send(navController)
+        }
+        composable("sended") {
+            Sended(navController)
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendScreen(
-    messages: List<Message>
+    messages: List<Message>,
+    navController: NavController
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
@@ -70,31 +90,33 @@ fun SendScreen(
                 CenteredVerticalSearchField()
             }
             Spacer(modifier = Modifier.height(8.dp))
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(messages.filter {
-                    it.name.contains(searchQuery, ignoreCase = true)
-                }) { msg ->
-                    MessageItem(msg = msg)
+            LazyColumn {
+                items(messages) { msg ->
+                    MessageItem(msg = msg, onClick = {
+                        navController.navigate("sended")
+                    })
                 }
             }
         }
         ExpandableFabExample(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(16.dp),
+            navController = navController
         )
     }
 }
 
 @Composable
 private fun MessageItem(
-    msg: Message
+    msg: Message,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable { },
+            .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
@@ -123,7 +145,8 @@ private fun MessageItem(
 }
 @Composable
 fun ExpandableFabExample(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ) {
     var expanded by remember { mutableStateOf(false) }
     Column(
@@ -141,7 +164,7 @@ fun ExpandableFabExample(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 MiniFab(icon = Icons.Default.Settings, onClick = {})
-                MiniFab(icon = Icons.Default.Send, onClick = {})
+                MiniFab(icon = Icons.Default.Send, onClick = {navController.navigate("send")})
                 MiniFab(icon = Icons.Default.Email, onClick = {})
                 MiniFab(icon = Icons.Default.Lock, onClick = {})
                 MiniFab(icon = Icons.Default.Person, onClick = {})
@@ -170,13 +193,13 @@ private fun MiniFab(
 }
 
 @Composable
-fun Send() {
+fun Send(navController: NavController) {
     val sampleList = listOf(
         Message("박지열", R.drawable.example , "20시에 전송될 예정입니다.", "오후 1:33"),
         Message("이승주", R.drawable.example, "18시에 전송될 예정입니다.", "오후 3:34"),
         Message("나이병", R.drawable.example ,"23시에 전송될 예정입니다.", "오후 5:21")
     )
-    SendScreen(messages = sampleList)
+    SendScreen(messages = sampleList, navController)
 }
 @Composable
 fun BlackHorizontalLine() {

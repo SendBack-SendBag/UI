@@ -1,4 +1,5 @@
 package com.example.sendbacksendbag
+import AppNavGraph
 import Send
 import Sending
 import android.os.Bundle
@@ -12,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavHostController
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SendBackSendBagTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Sending()
+                    AppNavGraph()
                 }
             }
         }
