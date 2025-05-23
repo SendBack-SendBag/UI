@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.sendbacksendbag.ExpandableFabExample
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,7 +110,7 @@ fun Sending(
         modifier = Modifier
             .align(Alignment.BottomEnd)
             .padding(16.dp),
-        navController
+        navController = navController,
     )
 }
 }
