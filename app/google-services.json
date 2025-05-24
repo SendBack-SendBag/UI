@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747902619239",
+    "project_id": "sendback-sandbag",
+    "storage_bucket": "sendback-sandbag.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747902619239:android:122523aac4c236897ccec2",
+        "android_client_info": {
+          "package_name": "com.example.sendbacksendbag"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkKbHI5LOIX-6dCcHid0W-44l9u9BATes"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
