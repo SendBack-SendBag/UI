@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,19 +32,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -108,7 +104,7 @@ fun InboxScreen(navController: NavController) {
         Message(
             id = "rabbit",
             name = "잠만 자는 토끼",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago",
             hasActionButton = true
@@ -116,21 +112,21 @@ fun InboxScreen(navController: NavController) {
         Message(
             id = "horse",
             name = "코딩하는 말",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago"
         ),
         Message(
             id = "otter",
             name = "배 긁고 있는 수달",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago"
         ),
         Message(
             id = "badger",
             name = "춤을 추는 오소리",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago"
         )
@@ -138,16 +134,8 @@ fun InboxScreen(navController: NavController) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "받은 메시지",
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 20.sp
-                    )
-                },
-                backgroundColor = Color.White,
-                elevation = 0.dp
+            androidx.compose.material3.TopAppBar(
+                title = { androidx.compose.material3.Text(text = "보낸 메시지", fontWeight = FontWeight.Black) }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(8.dp))
@@ -173,7 +161,8 @@ fun InboxScreen(navController: NavController) {
         ExpandableFabExample(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(16.dp),
+            navController = navController
         )
     }
 }
@@ -233,7 +222,7 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
 
 
 @Composable
-fun ChatScreen(navController: NavController?, userId: String) {
+fun ChatScreen(navController: NavController, userId: String) {
     val context = LocalContext.current
     var isLiked by remember { mutableStateOf(false) }
     var isDisliked by remember { mutableStateOf(false) }
@@ -346,7 +335,8 @@ fun ChatScreen(navController: NavController?, userId: String) {
         ExpandableFabExample(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(16.dp),
+            navController = navController
         )
     }
 }
@@ -543,7 +533,8 @@ fun BlackHorizontalLine() {
 }
 
 @Composable
-fun ExpandableFabExample(modifier: Modifier = Modifier) {
+fun ExpandableFabExample(modifier: Modifier = Modifier,
+                         navController: NavController){
     var expanded by remember { mutableStateOf(false) }
     Column(
         horizontalAlignment = Alignment.End,
@@ -560,10 +551,10 @@ fun ExpandableFabExample(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 MiniFab(icon = Icons.Default.Settings, onClick = {})
-                MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {})
-                MiniFab(icon = Icons.Default.Email, onClick = {})
+                MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {navController.navigate("send")})
+                MiniFab(icon = Icons.Default.Email, onClick = {navController.navigate("inbox")})
                 // 자물쇠 아이콘을 투표 관련 아이콘으로 변경
-                MiniFab(icon = Icons.Default.HowToVote, onClick = {})
+                MiniFab(icon = Icons.Default.HowToVote, onClick = {navController.navigate("voting")})
                 MiniFab(icon = Icons.Default.Person, onClick = {})
             }
         }
@@ -613,14 +604,15 @@ class Back : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SendBackSendBagTheme {
+                val navController = rememberNavController()
                 val userId = intent.getStringExtra("userId") ?: "rabbit"
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
 
                 when (screenType) {
-                    "chat" -> ChatScreen(navController = null, userId = userId)
+                    "chat" -> ChatScreen(navController = navController, userId = userId)
                     "feedback" -> {
                         val receiverName = intent.getStringExtra("receiverName") ?: ""
-                        FeedbackWriteScreen(navController = null, receiverName = receiverName)
+                        FeedbackWriteScreen(navController = navController, receiverName = receiverName)
                     }
                 }
             }
@@ -629,7 +621,7 @@ class Back : ComponentActivity() {
 }
 
 @Composable
-fun FeedbackWriteScreen(navController: NavController?, receiverName: String) {
+fun FeedbackWriteScreen(navController: NavController, receiverName: String) {
     val context = LocalContext.current
     var feedbackText by remember { mutableStateOf("") }
 
@@ -751,7 +743,8 @@ fun FeedbackWriteScreen(navController: NavController?, receiverName: String) {
         ExpandableFabExample(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(16.dp),
+            navController = navController
         )
     }
 }

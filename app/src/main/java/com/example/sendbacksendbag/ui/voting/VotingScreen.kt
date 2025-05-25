@@ -32,6 +32,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api // OptIn 어노테이
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState // <<--- 이 타입을 사용해야 합니다.
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import kotlinx.coroutines.launch // 코루틴 스코프
@@ -39,8 +42,9 @@ import kotlinx.coroutines.launch // 코루틴 스코프
 // --- 기존 코드 시작 (SendBackSendBagTheme 사용 및 HorizontalDivider 변경) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollScreen() {
+fun PollScreen(navController: NavController) {
     // SendBackSendBagTheme { // 앱의 실제 테마 사용
+    Box{
     Scaffold(
         topBar = {
             TopAppBar(
@@ -77,6 +81,13 @@ fun PollScreen() {
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         PollContent(Modifier.padding(innerPadding))
+    }
+        ExpandableFabExample(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            navController = navController
+        )
     }
     // }
 }
@@ -462,7 +473,8 @@ fun OptionItem(
 @Preview(showBackground = true, backgroundColor = 0xFFE7F0FE)
 @Composable
 fun PollScreenPreview() {
+    val navController = rememberNavController()
     SendBackSendBagTheme { // 앱의 실제 테마 사용
-        PollScreen()
+        PollScreen(navController)
     }
 }
