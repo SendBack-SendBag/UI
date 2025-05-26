@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AccountCircle // 프로필 아이콘 예시
 import androidx.compose.material.icons.filled.Close // 닫기 아이콘 예시
 import androidx.compose.material.icons.filled.Search
@@ -309,7 +310,7 @@ fun CommentBottomSheet(
                     enabled = commentInput.isNotBlank() // 입력 내용이 있을 때만 활성화
                 ) {
                     Icon(
-                        Icons.Filled.Send,
+                        Icons.AutoMirrored.Filled.Send,
                         contentDescription = "댓글 보내기",
                         tint = if (commentInput.isNotBlank()) MaterialTheme.colorScheme.primary else Color.Gray
                     )
