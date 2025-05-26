@@ -55,7 +55,7 @@ private const val TEMP_PROFILE_IMAGE_FILENAME = "temp_profile_image.jpg"
 
 
 @Composable
-fun ProfileScreenContainer() {
+fun ProfileScreenContainer(id: String?) {
     val context = LocalContext.current
     val sharedPreferences = remember {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -91,6 +91,7 @@ fun ProfileScreenContainer() {
 
         mutableStateOf(
             ProfileData(
+                id = id,
                 name = name,
                 messageArrivalTimeLabel = arrivalTimeLabel,
                 messageArrivalTime = arrivalTime,
@@ -455,6 +456,6 @@ fun formatDisplayTime(timeString: String): String {
 @Composable
 fun DefaultPreview() {
     SendBackSendBagTheme {
-        ProfileScreenContainer()
+        ProfileScreenContainer("user123")
     }
 }
