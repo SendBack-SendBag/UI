@@ -72,4 +72,13 @@ dependencies {
     implementation(libs.coil.compose)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.play.services.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.credentials.play.services.auth) // Google Play 서비스 기반 Credential Provider
+    implementation(libs.googleid) // Google ID 라이브러리
+    implementation(libs.firebase.auth)
 }

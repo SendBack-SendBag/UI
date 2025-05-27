@@ -150,7 +150,15 @@ fun InboxScreen(navController: NavController?) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             androidx.compose.material3.TopAppBar(
-                title = { androidx.compose.material3.Text(text = "보낸 메시지", fontWeight = FontWeight.Black) }
+                title = { androidx.compose.material3.Text(text = "받은 메시지", fontWeight = FontWeight.Black) },
+                actions = {
+                    androidx.compose.material3.IconButton(onClick = {navController.navigate("settings")}) {
+                        androidx.compose.material3.Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
+                }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(8.dp))
@@ -290,7 +298,7 @@ fun ChatScreen(navController: NavController?, userId: String, feedbackViewModel:
             .background(Color(0xFFE6F0FA))
         ) {
             // Top App Bar with back button (설정 버튼 제거)
-            TopAppBar(
+            androidx.compose.material3.TopAppBar(
                 title = {
                     Text(
                         text = userName,
@@ -312,8 +320,11 @@ fun ChatScreen(navController: NavController?, userId: String, feedbackViewModel:
                         )
                     }
                 },
-                backgroundColor = Color.White,
-                elevation = 0.dp
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    actionIconContentColor = Color.Black
+                )
             )
 
             // 상단바와 채팅 메시지 사이에 공백 추가
@@ -621,9 +632,8 @@ fun ExpandableFabExample(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MiniFab(icon = Icons.Default.Settings, onClick = {})
-                MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {})
-                // 이메일 아이콘 클릭 시 받은 메시지 화면으로 이동
+                MiniFab(icon = Icons.Default.Home, onClick = {navController.navigate("home")})
+                MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {navController.navigate("send")})
                 MiniFab(icon = Icons.Default.Email, onClick = {
                     // 피드백 초기화
                     onEmailClicked()
@@ -642,8 +652,8 @@ fun ExpandableFabExample(
                         (context as? ComponentActivity)?.finish()
                     }
                 })
-                MiniFab(icon = Icons.Default.HowToVote, onClick = {})
-                MiniFab(icon = Icons.Default.Person, onClick = {})
+                MiniFab(icon = Icons.Default.HowToVote, onClick = {navController.navigate("voting")})
+                MiniFab(icon = Icons.Default.Person, onClick = {navController.navigate("friends")})
             }
         }
         FloatingActionButton(

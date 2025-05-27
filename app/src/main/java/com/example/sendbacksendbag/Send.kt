@@ -38,6 +38,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.NavController
 import com.example.sendbacksendbag.*
 import com.example.sendbacksendbag.R
+import com.example.sendbacksendbag.ui.friends.FriendsScreen
+import com.example.sendbacksendbag.ui.profile.ProfileData
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.PollScreen
 
@@ -53,8 +55,17 @@ fun AppNavGraph() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "send"
+        startDestination = "home"
     ) {
+        composable("home") {
+            HomeScreen(
+                navController = navController,
+                notifications = listOf("박지열 님이 투표를 게시했습니다.", "나이병 님에게 메시지가 23시에 전송될 예정입니다.", "이승주 님에게 메시지가 23시에 전송될 예정입니다."),
+                onSettingsClick = { navController.navigate("settings") },
+                onReceivedClick = { navController.navigate("inbox") },
+                onSentClick = { navController.navigate("send") }
+            )
+        }
         composable("send") {
             Send(navController)
         }
@@ -65,7 +76,55 @@ fun AppNavGraph() {
             Sended(navController)
         }
         composable("profile"){
-            ProfileScreenContainer(navController)
+            ProfileScreenContainer(navController, "data")
+        }
+        composable("friends"){
+            FriendsScreen(
+                navController = navController,
+                myProfile = ProfileData(
+                    id = "me",
+                    name = "김승우",
+                    messageArrivalTime = "20 : 00",
+                    profileImageUri = null, // Uri.parse("...") 또는 null
+                    placeholderImageRes = R.drawable.example_picture // R.drawable.kim_seung_woo 등 실제 이미지 리소스 사용
+                ),
+                friends = listOf(
+                    ProfileData(
+                        id = "friend1",
+                        name = "박지열",
+                        messageArrivalTime = "20 : 00",
+                        profileImageUri = null,
+                        placeholderImageRes = R.drawable.example_picture // R.drawable.park_ji_yeol
+                    ),
+                    ProfileData(
+                        id = "friend2",
+                        name = "원숭이",
+                        messageArrivalTime = "20 : 00",
+                        profileImageUri = null,
+                        placeholderImageRes = R.drawable.example_picture // R.drawable.won_soong_i
+                    ),
+                    ProfileData(
+                        id = "friend3",
+                        name = "이승주",
+                        messageArrivalTime = "20 : 00",
+                        profileImageUri = null,
+                        placeholderImageRes = R.drawable.example_picture // R.drawable.lee_seung_ju
+                    ),
+                    ProfileData(
+                        id = "friend4",
+                        name = "나이병",
+                        messageArrivalTime = "20 : 00",
+                        profileImageUri = null,
+                        placeholderImageRes = R.drawable.example_picture // R.drawable.na_i_byeong
+                    )
+                ),
+                onFriendClick = { profile ->
+                    println("Clicked on: ${profile.name}") // 클릭 시 로그 출력 (네비게이션 로직 대체)
+                },
+                onAddFriendClick = {
+                    println("Add Friend Clicked!") // 친구 추가 버튼 클릭 시 로그 출력
+                }
+            )
         }
         composable("voting"){
             PollScreen(navController)
@@ -88,6 +147,15 @@ fun AppNavGraph() {
             }
             FeedbackWriteScreen(navController = navController, receiverName = receiverName)
         }
+        composable("settings") {
+            SettingsScreen(
+                navController = navController,
+                onMenuClick = { /* 메뉴 클릭 */ },
+                onSearch = { /* 검색 기능 */ },
+                onAccountClick = { /* 계정 클릭 */ },
+                onItemClick = { item -> /* 아이템 클릭 */ }
+            )
+        }
     }
 }
 
@@ -102,7 +170,15 @@ fun SendScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black) }
+                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black) },
+                actions = {
+                    IconButton(onClick = {navController.navigate("settings")}) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
+                }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(16.dp))

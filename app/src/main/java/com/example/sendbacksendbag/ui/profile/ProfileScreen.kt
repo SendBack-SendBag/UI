@@ -58,7 +58,8 @@ private const val TEMP_PROFILE_IMAGE_FILENAME = "temp_profile_image.jpg"
 
 
 @Composable
-fun ProfileScreenContainer(navController: NavController) {
+
+fun ProfileScreenContainer(navController: NavController, id: String?) {
     val context = LocalContext.current
     val sharedPreferences = remember {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -94,6 +95,7 @@ fun ProfileScreenContainer(navController: NavController) {
 
         mutableStateOf(
             ProfileData(
+                id = id,
                 name = name,
                 messageArrivalTimeLabel = arrivalTimeLabel,
                 messageArrivalTime = arrivalTime,
@@ -129,6 +131,7 @@ fun ProfileScreenContainer(navController: NavController) {
     }
 
     ProfileScreen(
+        navController,
         profileData = if (isEditing) tempProfileData else profileDataState,
         isEditing = isEditing,
         onEditClick = {
@@ -206,6 +209,7 @@ fun ProfileScreenContainer(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     profileData: ProfileData,
     isEditing: Boolean,
     onEditClick: () -> Unit,
@@ -214,7 +218,6 @@ fun ProfileScreen(
     onProfileImageChangeClick: () -> Unit,
     onProfileDataChange: (ProfileData) -> Unit
 ) {
-    val navController = rememberNavController()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -249,6 +252,7 @@ fun ProfileScreen(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             ProfileCard(
+                navController,
                 profileData = profileData,
                 isEditing = isEditing,
                 onProfileImageChangeClick = onProfileImageChangeClick,
@@ -269,6 +273,7 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileCard(
+    navController: NavController,
     profileData: ProfileData,
     isEditing: Boolean,
     onProfileImageChangeClick: () -> Unit,
@@ -395,7 +400,7 @@ fun ProfileCard(
                 Spacer(modifier = Modifier.height(if (isEditing) 30.dp else 250.dp))
                 if (!isEditing) {
                     Button(
-                        onClick = { /* 피드백 보내기 클릭 시 동작 */ },
+                        onClick = {navController.navigate("sending") },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDCDCDC)),
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp)
@@ -468,6 +473,6 @@ fun formatDisplayTime(timeString: String): String {
 fun DefaultPreview() {
     SendBackSendBagTheme {
         val navController = rememberNavController()
-        ProfileScreenContainer(navController)
+        ProfileScreenContainer(navController, "user123")
     }
 }
