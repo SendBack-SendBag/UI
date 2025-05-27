@@ -83,6 +83,15 @@ fun AppNavGraph() {
             }
             FeedbackWriteScreen(navController = navController, receiverName = receiverName)
         }
+        composable("settings") {
+            SettingsScreen(
+                navController = navController,
+                onMenuClick = { /* 메뉴 클릭 */ },
+                onSearch = { /* 검색 기능 */ },
+                onAccountClick = { /* 계정 클릭 */ },
+                onItemClick = { item -> /* 아이템 클릭 */ }
+            )
+        }
     }
 }
 
