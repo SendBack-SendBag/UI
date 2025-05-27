@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,8 +33,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.*
@@ -42,6 +45,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,6 +57,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.border
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+
 
 
 // 메시지 데이터 클래스
@@ -74,6 +84,7 @@ data class ChatMessage(
 @Composable
 fun MainApp() {
     val navController = rememberNavController()
+    val feedbackViewModel = viewModel<FeedbackViewModel>()
 
     NavHost(navController = navController, startDestination = "inbox") {
         composable("inbox") {
@@ -81,7 +92,7 @@ fun MainApp() {
         }
         composable("chat/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            ChatScreen(navController = navController, userId = userId)
+            ChatScreen(navController = navController, userId = userId, feedbackViewModel = feedbackViewModel)
         }
         composable("feedback/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
@@ -92,13 +103,17 @@ fun MainApp() {
                 "badger" -> "춤을 추는 오소리"
                 else -> "사용자"
             }
-            FeedbackWriteScreen(navController = navController, receiverName = receiverName)
+            FeedbackWriteScreen(
+                navController = navController,
+                receiverName = receiverName,
+                feedbackViewModel = feedbackViewModel
+            )
         }
     }
 }
 
 @Composable
-fun InboxScreen(navController: NavController) {
+fun InboxScreen(navController: NavController?) {
     val context = LocalContext.current
     val sampleMessages = listOf(
         Message(
@@ -232,13 +247,15 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
 
 
 @Composable
-fun ChatScreen(navController: NavController, userId: String) {
+fun ChatScreen(navController: NavController?, userId: String, feedbackViewModel: FeedbackViewModel = viewModel()) {
     val context = LocalContext.current
     var isLiked by remember { mutableStateOf(false) }
     var isDisliked by remember { mutableStateOf(false) }
+    val userFeedback = feedbackViewModel.userFeedback.value
 
-    val chatMessages = remember {
-        when (userId) {
+    // 기본 메시지 및 사용자 피드백 메시지 추가
+    val chatMessages = remember(userFeedback) {
+        val initialMessages = when (userId) {
             "rabbit" -> listOf(
                 ChatMessage(
                     content = "네 말도 중요하지만 상대의 말이 끝난 다음에 이야기\n 해주면 소통이 더 잘 될 것 같아.\n 상대방의 말을 조금만 더 들어줬으면 좋겠어.",
@@ -253,7 +270,20 @@ fun ChatScreen(navController: NavController, userId: String) {
                     time = ""
                 )
             )
+        }.toMutableList()
+
+        // 사용자가 피드백을 작성했으면 메시지 목록에 추가
+        userFeedback?.let {
+            initialMessages.add(
+                ChatMessage(
+                    content = it,
+                    isFromMe = true,
+                    time = ""
+                )
+            )
         }
+
+        initialMessages
     }
 
     val userName = when (userId) {
@@ -313,9 +343,12 @@ fun ChatScreen(navController: NavController, userId: String) {
                     ChatMessageItem(message)
                 }
 
-                if (userId == "rabbit") {
+                // 피드백이 없을 때만 피드백 평가 카드 표시
+                if (userId == "rabbit" && userFeedback == null) {
                     item {
                         Spacer(modifier = Modifier.height(170.dp))
+
+                        // 피드백 평가 카드 표시
                         FeedbackRatingCard(
                             isLiked = isLiked,
                             isDisliked = isDisliked,
@@ -341,6 +374,7 @@ fun ChatScreen(navController: NavController, userId: String) {
                         )
                     }
                 }
+                // 피드백이 있을 때는 평가 카드와 피드백 남기기 버튼 모두 표시하지 않음
             }
         }
 
@@ -349,7 +383,11 @@ fun ChatScreen(navController: NavController, userId: String) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            navController = navController
+            navController = navController,
+            onEmailClicked = {
+                // 피드백을 null로 설정하여 초기 상태로 돌아가게 함
+                feedbackViewModel.resetFeedback()
+            }
         )
     }
 }
@@ -481,44 +519,62 @@ fun FeedbackRatingCard(
 
 @Composable
 fun ChatMessageItem(message: ChatMessage) {
+    // 특수 메시지 플래그
+    val isSpecial = message.isFromMe && message.content == "네 말을 끝까지 듣도록 노력할게"
+
     Box(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        // 항상 우측 끝에 붙이기
         contentAlignment = if (message.isFromMe) Alignment.CenterEnd else Alignment.CenterStart
     ) {
         Row(
             verticalAlignment = Alignment.Top,
-            horizontalArrangement = if (message.isFromMe) Arrangement.End else Arrangement.Start,
-            modifier = Modifier.fillMaxWidth()
+            // special 메시지는 좌우 패딩을 줄여서 오른쪽으로 더 붙이기
+            modifier = Modifier
+                .padding(
+                    start  = if (isSpecial) 32.dp else 16.dp,
+                    end    = 16.dp
+                )
         ) {
-            // 메시지가 내 것이 아닐 때만 원을 표시
+            // --- 좌측 아바타: 내 메시지가 아니면 보여주기 ---
             if (!message.isFromMe) {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .background(Color.Yellow, CircleShape)
-                        .padding(end = 8.dp)
+                        .size(40.dp)
+                        .background(Color(0xFFFFE680), CircleShape)
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
             }
 
+            // 메시지 버블 + 시간
             Column(
                 horizontalAlignment = if (message.isFromMe) Alignment.End else Alignment.Start
             ) {
                 Box(
                     modifier = Modifier
                         .background(
-                            color = if (message.isFromMe) Color(0xFF5EA7FF) else Color.White,
+                            color = when {
+                                isSpecial        -> Color.White
+                                message.isFromMe -> Color(0xFF5EA7FF)
+                                else             -> Color.White
+                            },
                             shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Text(
                         text = message.content,
-                        color = if (message.isFromMe) Color.White else Color.Black,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        color = when {
+                            isSpecial        -> Color.Black
+                            message.isFromMe -> Color.White
+                            else             -> Color.Black
+                        }
                     )
                 }
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = message.time,
                     fontSize = 10.sp,
@@ -526,13 +582,24 @@ fun ChatMessageItem(message: ChatMessage) {
                 )
             }
 
-            // 메시지가 내 것일 때만 오른쪽에 공간 확보
-            if (message.isFromMe) {
-                Spacer(modifier = Modifier.width(32.dp)) // 원 크기에 맞춘 공간
+            // --- 특수 메시지일 때만 우측 아바타 표시 ---
+            if (isSpecial) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color(0xFFFFE680), CircleShape)
+                )
+            }
+            // 일반 내 메시지는 여분 공간 확보
+            else if (message.isFromMe) {
+                Spacer(modifier = Modifier.width(32.dp))
             }
         }
     }
 }
+
+
 
 @Composable
 fun BlackHorizontalLine() {
@@ -546,8 +613,12 @@ fun BlackHorizontalLine() {
 }
 
 @Composable
-fun ExpandableFabExample(modifier: Modifier = Modifier,
-                         navController: NavController){
+fun ExpandableFabExample(
+    modifier: Modifier = Modifier,
+    navController: NavController? = null,
+    onEmailClicked: () -> Unit = {}
+) {
+    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     Column(
         horizontalAlignment = Alignment.End,
@@ -565,8 +636,24 @@ fun ExpandableFabExample(modifier: Modifier = Modifier,
             ) {
                 MiniFab(icon = Icons.Default.Home, onClick = {navController.navigate("home")})
                 MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {navController.navigate("send")})
-                MiniFab(icon = Icons.Default.Email, onClick = {navController.navigate("inbox")})
-                // 자물쇠 아이콘을 투표 관련 아이콘으로 변경
+                MiniFab(icon = Icons.Default.Email, onClick = {
+                    // 피드백 초기화
+                    onEmailClicked()
+
+                    if (navController != null) {
+                        navController.navigate("inbox") {
+                            // 백 스택 정리
+                            popUpTo("inbox") {
+                                inclusive = true
+                            }
+                        }
+                    } else {
+                        val intent = Intent(context, Back::class.java)
+                        intent.putExtra("screenType", "inbox")
+                        context.startActivity(intent)
+                        (context as? ComponentActivity)?.finish()
+                    }
+                })
                 MiniFab(icon = Icons.Default.HowToVote, onClick = {navController.navigate("voting")})
                 MiniFab(icon = Icons.Default.Person, onClick = {navController.navigate("friends")})
             }
@@ -578,7 +665,7 @@ fun ExpandableFabExample(modifier: Modifier = Modifier,
             Icon(
                 imageVector = if (expanded) Icons.Default.Close else Icons.Default.MoreVert,
                 contentDescription = null,
-                tint = Color.Black  // 아이콘 색상을 검정색으로 변경
+                tint = Color.Black
             )
         }
     }
@@ -600,13 +687,6 @@ private fun MiniFab(
     }
 }
 
-// ActivityMain에서 사용할 수 있는 앱의 진입점
-@Composable
-fun AppEntryPoint() {
-    MaterialTheme {
-        MainApp()
-    }
-}
 
 /**
  * Back 액티비티 클래스
@@ -620,12 +700,14 @@ class Back : ComponentActivity() {
                 val navController = rememberNavController()
                 val userId = intent.getStringExtra("userId") ?: "rabbit"
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
+                val feedbackViewModel = viewModel<FeedbackViewModel>()
 
                 when (screenType) {
-                    "chat" -> ChatScreen(navController = navController, userId = userId)
+                    "inbox" -> InboxScreen(navController = null)
+                    "chat" -> ChatScreen(navController = null, userId = userId, feedbackViewModel = feedbackViewModel)
                     "feedback" -> {
                         val receiverName = intent.getStringExtra("receiverName") ?: ""
-                        FeedbackWriteScreen(navController = navController, receiverName = receiverName)
+                        FeedbackWriteScreen(navController = null, receiverName = receiverName, feedbackViewModel = feedbackViewModel)
                     }
                 }
             }
@@ -633,8 +715,23 @@ class Back : ComponentActivity() {
     }
 }
 
+// FeedbackViewModel에 피드백 초기화 함수 추가
+class FeedbackViewModel : ViewModel() {
+    private val _userFeedback = mutableStateOf<String?>(null)
+    val userFeedback: State<String?> = _userFeedback
+
+    fun saveFeedback(feedback: String) {
+        _userFeedback.value = "네 말을 끝까지 듣도록 노력할게"
+    }
+
+    // 피드백을 초기 상태로 재설정하는 함수 추가
+    fun resetFeedback() {
+        _userFeedback.value = null
+    }
+}
+
 @Composable
-fun FeedbackWriteScreen(navController: NavController, receiverName: String) {
+fun FeedbackWriteScreen(navController: NavController?, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel()) {
     val context = LocalContext.current
     var feedbackText by remember { mutableStateOf("") }
 
@@ -644,7 +741,7 @@ fun FeedbackWriteScreen(navController: NavController, receiverName: String) {
                 .fillMaxSize()
                 .background(Color(0xFFE6F0FA))
         ) {
-            // 상단 앱바
+            // 상단 앱바는 기존과 동일하게 유지
             TopAppBar(
                 title = {
                     Text(
@@ -724,7 +821,10 @@ fun FeedbackWriteScreen(navController: NavController, receiverName: String) {
                 ) {
                     TextButton(
                         onClick = {
-                            // 피드백 제출 후 이전 화면으로 돌아가기
+                            // 피드백 저장 후 이전 화면으로 돌아가기
+                            if (feedbackText.isNotEmpty()) {
+                                feedbackViewModel.saveFeedback(feedbackText)
+                            }
                             if (navController != null) {
                                 navController.popBackStack()
                             } else {
@@ -759,5 +859,13 @@ fun FeedbackWriteScreen(navController: NavController, receiverName: String) {
                 .padding(16.dp),
             navController = navController
         )
+    }
+}
+
+// ActivityMain에서 사용할 수 있는 앱의 진입점
+@Composable
+fun AppEntryPoint() {
+    MaterialTheme {
+        MainApp()
     }
 }
