@@ -135,7 +135,15 @@ fun InboxScreen(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             androidx.compose.material3.TopAppBar(
-                title = { androidx.compose.material3.Text(text = "받은 메시지", fontWeight = FontWeight.Black) }
+                title = { androidx.compose.material3.Text(text = "받은 메시지", fontWeight = FontWeight.Black) },
+                actions = {
+                    androidx.compose.material3.IconButton(onClick = {navController.navigate("settings")}) {
+                        androidx.compose.material3.Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
+                }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(8.dp))
@@ -553,12 +561,12 @@ fun ExpandableFabExample(modifier: Modifier = Modifier,
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MiniFab(icon = Icons.Default.Settings, onClick = {navController.navigate("settings")})
+                MiniFab(icon = Icons.Default.Home, onClick = {navController.navigate("home")})
                 MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {navController.navigate("send")})
                 MiniFab(icon = Icons.Default.Email, onClick = {navController.navigate("inbox")})
                 // 자물쇠 아이콘을 투표 관련 아이콘으로 변경
                 MiniFab(icon = Icons.Default.HowToVote, onClick = {navController.navigate("voting")})
-                MiniFab(icon = Icons.Default.Person, onClick = {})
+                MiniFab(icon = Icons.Default.Person, onClick = {navController.navigate("friends")})
             }
         }
         FloatingActionButton(
