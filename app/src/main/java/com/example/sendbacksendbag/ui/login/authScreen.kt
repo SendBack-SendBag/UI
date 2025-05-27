@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import com.example.sendbacksendbag.R // Google 아이콘 리소스 ID (예시)
 import com.example.sendbacksendbag.authentication.AuthViewModel
@@ -36,7 +37,7 @@ private val TABS = listOf("로그인", "회원가입")
 
 // ViewModel에서 AuthState를 관찰하여 UI 업데이트
 @Composable
-fun AuthScreen(authViewModel: AuthViewModel = viewModel()) {
+fun AuthScreen(navController: NavController,authViewModel: AuthViewModel = viewModel()) {
     val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
 
@@ -53,6 +54,7 @@ fun AuthScreen(authViewModel: AuthViewModel = viewModel()) {
         if (authState.isAuthenticated) {
             Toast.makeText(context, "${authState.userEmail}님, 환영합니다!", Toast.LENGTH_SHORT).show()
             // 여기에 메인 화면으로 이동하는 로직 추가
+            navController.navigate("home")
         }
     }
 
@@ -378,10 +380,4 @@ fun AuthButton(text: String, onClick: () -> Unit) {
     ) {
         Text(text = text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AuthScreenPreview() {
-    AuthScreen()
 }

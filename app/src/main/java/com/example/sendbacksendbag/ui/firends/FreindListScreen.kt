@@ -22,7 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
+import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.profile.ProfileData
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
@@ -30,11 +32,13 @@ import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FriendsScreen(
+    navController: NavController,
     myProfile: ProfileData,
     friends: List<ProfileData>,
     onFriendClick: (ProfileData) -> Unit, // 친구 클릭 시 호출될 람다
     onAddFriendClick: () -> Unit // 친구 추가 아이콘 클릭 시 호출될 람다
 ) {
+    Box{
     Scaffold(
         topBar = {
             TopAppBar(
@@ -61,6 +65,7 @@ fun FriendsScreen(
         ) {
             // 나의 프로필
             FriendListItem(
+                navController = navController,
                 profile = myProfile,
                 onClick = { onFriendClick(myProfile) }, // 내 프로필 클릭 시 동작
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -81,6 +86,7 @@ fun FriendsScreen(
             ) {
                 items(friends) { friend ->
                     FriendListItem(
+                        navController,
                         profile = friend,
                         onClick = { onFriendClick(friend) } // 친구 클릭 시 동작
                     )
@@ -88,10 +94,17 @@ fun FriendsScreen(
             }
         }
     }
+        ExpandableFabExample(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            navController = navController
+        )}
 }
 
 @Composable
 fun FriendListItem(
+    navController: NavController,
     profile: ProfileData,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -101,7 +114,7 @@ fun FriendListItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick) // Row 전체를 클릭 가능하게 만듦
+            .clickable(onClick = {navController.navigate("profile")}) // Row 전체를 클릭 가능하게 만듦
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -145,59 +158,3 @@ fun FriendListItem(
 }
 
 // Preview 함수 (예시 데이터 사용)
-@Preview(showBackground = true, name = "Friends Screen Preview")
-@Composable
-fun FriendsScreenPreview() {
-    // 예시 데이터 생성
-    val myProfile = ProfileData(
-        id = "me",
-        name = "김승우",
-        messageArrivalTime = "20 : 00",
-        profileImageUri = null, // Uri.parse("...") 또는 null
-        placeholderImageRes = R.drawable.example_picture // R.drawable.kim_seung_woo 등 실제 이미지 리소스 사용
-    )
-
-    val friendsList = listOf(
-        ProfileData(
-            id = "friend1",
-            name = "박지열",
-            messageArrivalTime = "20 : 00",
-            profileImageUri = null,
-            placeholderImageRes = R.drawable.example_picture // R.drawable.park_ji_yeol
-        ),
-        ProfileData(
-            id = "friend2",
-            name = "원숭이",
-            messageArrivalTime = "20 : 00",
-            profileImageUri = null,
-            placeholderImageRes = R.drawable.example_picture // R.drawable.won_soong_i
-        ),
-        ProfileData(
-            id = "friend3",
-            name = "이승주",
-            messageArrivalTime = "20 : 00",
-            profileImageUri = null,
-            placeholderImageRes = R.drawable.example_picture // R.drawable.lee_seung_ju
-        ),
-        ProfileData(
-            id = "friend4",
-            name = "나이병",
-            messageArrivalTime = "20 : 00",
-            profileImageUri = null,
-            placeholderImageRes = R.drawable.example_picture // R.drawable.na_i_byeong
-        )
-    )
-
-    SendBackSendBagTheme {
-        FriendsScreen(
-            myProfile = myProfile,
-            friends = friendsList,
-            onFriendClick = { profile ->
-                println("Clicked on: ${profile.name}") // 클릭 시 로그 출력 (네비게이션 로직 대체)
-            },
-            onAddFriendClick = {
-                println("Add Friend Clicked!") // 친구 추가 버튼 클릭 시 로그 출력
-            }
-        )
-    }
-}

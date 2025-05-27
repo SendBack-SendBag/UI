@@ -1,3 +1,8 @@
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,12 +32,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavController
 import com.example.sendbacksendbag.*
 import com.example.sendbacksendbag.R
+import com.example.sendbacksendbag.ui.friends.FriendsScreen
+import com.example.sendbacksendbag.ui.login.AuthScreen
+import com.example.sendbacksendbag.ui.profile.ProfileData
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.PollScreen
 
@@ -43,57 +52,6 @@ data class Message(
     val content: String,
     val time: String
 )
-@Composable
-fun AppNavGraph() {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = "send"
-    ) {
-        composable("send") {
-            Send(navController)
-        }
-        composable("sending"){
-            Sending("박지열","니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;",navController)
-        }
-        composable("sended") {
-            Sended(navController)
-        }
-        composable("profile"){
-            ProfileScreenContainer(navController)
-        }
-        composable("voting"){
-            PollScreen(navController)
-        }
-        composable("inbox") {
-            InboxScreen(navController = navController)
-        }
-        composable("chat/{userId}") { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            ChatScreen(navController = navController, userId = userId)
-        }
-        composable("feedback/{userId}") { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            val receiverName = when (userId) {
-                "rabbit" -> "잠만 자는 토끼"
-                "horse" -> "코딩하는 말"
-                "otter" -> "배 긁고 있는 수달"
-                "badger" -> "춤을 추는 오소리"
-                else -> "사용자"
-            }
-            FeedbackWriteScreen(navController = navController, receiverName = receiverName)
-        }
-        composable("settings") {
-            SettingsScreen(
-                navController = navController,
-                onMenuClick = { /* 메뉴 클릭 */ },
-                onSearch = { /* 검색 기능 */ },
-                onAccountClick = { /* 계정 클릭 */ },
-                onItemClick = { item -> /* 아이템 클릭 */ }
-            )
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,7 +64,16 @@ fun SendScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black) }
+                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black) },
+                actions = {
+                    IconButton(onClick = {navController.navigate("settings")}) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(16.dp))
