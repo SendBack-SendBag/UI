@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.profile.ProfileData
+import com.example.sendbacksendbag.ui.voting.CommentData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +23,7 @@ private const val KEY_ARRIVAL_TIME = "profile_arrival_time"
 private const val KEY_STATUS_MESSAGE = "profile_status_message"
 private const val KEY_IMAGE_URI_STRING = "profile_image_uri_string"
 private const val MAIN_PROFILE_IMAGE_FILENAME_PREFIX = "profile_image_"
+private const val KEY_COMMENTS = "voting_comments" // 댓글 저장을 위한 새 키 추가
 private const val FRIENDS_JSON_FILENAME = "friends.json" // JSON 파일 이름
 
 
@@ -40,6 +42,9 @@ class FriendsRepository(private val context: Context) {
     // '친구 목록'을 위한 StateFlow (JSON에서 로드)
     private val _friends = MutableStateFlow<List<ProfileData>>(loadFriendsFromJson())
     val friends: StateFlow<List<ProfileData>> = _friends.asStateFlow()
+
+    private val _comments = MutableStateFlow<List<CommentData>>(loadComments())
+    val comments: StateFlow<List<CommentData>> = _comments.asStateFlow()
 
     // === 데이터 로드 ===
     // 내 프로필 로드
@@ -190,6 +195,55 @@ class FriendsRepository(private val context: Context) {
         } catch (e: Exception) {
             Log.e("Repository", "Error copying URI $uri to $targetFile", e)
             null
+        }
+    }
+
+    /**
+     * SharedPreferences에서 댓글 목록을 로드합니다.
+     */
+    private fun loadComments(): List<CommentData> {
+        val jsonString = sharedPreferences.getString(KEY_COMMENTS, null)
+        return if (jsonString != null) {
+            try {
+                json.decodeFromString<List<CommentData>>(jsonString)
+            } catch (e: Exception) {
+                Log.e("Repository", "Error loading comments from SharedPreferences", e)
+                emptyList()
+            }
+        } else {
+            // 초기 댓글 데이터 (기존 ViewModel에 있던 데이터)
+            listOf(
+                CommentData("춤추는 고양이", "가끔씩 그런 점이 있는듯"),
+                CommentData("배고픈 수달", "인정"),
+                CommentData("코딩하는 말", "난 아닌거 같던데")
+            )
+        }
+    }
+    /**
+     * 댓글 목록을 SharedPreferences에 저장합니다.
+     */
+    private fun saveComments(commentsList: List<CommentData>) {
+        try {
+            val jsonString = json.encodeToString(commentsList)
+            with(sharedPreferences.edit()) {
+                putString(KEY_COMMENTS, jsonString)
+                apply()
+            }
+            Log.d("Repository", "Comments saved to SharedPreferences.")
+        } catch (e: Exception) {
+            Log.e("Repository", "Error saving comments to SharedPreferences", e)
+        }
+    }
+
+    /**
+     * 새 댓글을 추가하고 전체 목록을 저장합니다.
+     */
+    fun addCommentAndSave(comment: CommentData) {
+        _comments.update { currentComments ->
+            // AI 댓글이므로 맨 위에 추가
+            val updatedList = listOf(comment) + currentComments
+            saveComments(updatedList) // 변경된 목록 저장
+            updatedList // 업데이트된 목록 반환
         }
     }
 }

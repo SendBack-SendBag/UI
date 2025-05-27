@@ -20,6 +20,9 @@ import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.PollScreen
 import com.example.sendbacksendbag.authentication.AuthViewModel
+import com.example.sendbacksendbag.ui.mypoll.MyPollScreen
+import com.example.sendbacksendbag.ui.voting.VotingViewModel
+import com.example.sendbacksendbag.ui.voting.VotingViewModelFactory
 
 // import com.example.sendbacksendbag.FeedbackViewModel // ViewModel import (실제 경로 확인)
 // import com.example.sendbacksendbag.R // R import
@@ -34,6 +37,12 @@ fun AppNavGraph(
     val myProfile by friendsRepository.myProfile.collectAsState()
     val friendsList by friendsRepository.friends.collectAsState()
     val context = LocalContext.current
+    val votingViewModel: VotingViewModel = viewModel(
+        factory = VotingViewModelFactory(friendsRepository)
+    )
+
+    val feedbackViewModel = viewModel<FeedbackViewModel>()
+
     // FeedbackViewModel (필요 시 실제 ViewModel 사용)
     // val feedbackViewModel: FeedbackViewModel = viewModel()
     LaunchedEffect(key1 = Unit) {
@@ -96,20 +105,20 @@ fun AppNavGraph(
             )
         }
         composable("voting") {
-            PollScreen(navController) // 실제 PollScreen Composable 사용
+            PollScreen(navController, votingViewModel) // 생성된 ViewModel 전달
         }
         composable("inbox") {
             InboxScreen(navController = navController) // 실제 InboxScreen Composable 사용
         }
         composable("chat/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            // ChatScreen(navController = navController, userId = userId, feedbackViewModel = feedbackViewModel) // 실제 ChatScreen Composable 사용
+             ChatScreen(navController = navController, userId = userId, feedbackViewModel = feedbackViewModel) // 실제 ChatScreen Composable 사용
         }
         composable("feedback/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
             val receiverProfile = friendsRepository.getFriendById(userId)
             val receiverName = receiverProfile?.name ?: "사용자"
-            // FeedbackWriteScreen(navController = navController, receiverName = receiverName, feedbackViewModel = feedbackViewModel, userId = userId) // 실제 FeedbackWriteScreen Composable 사용
+            FeedbackWriteScreen(navController = navController, receiverName = receiverName, feedbackViewModel = feedbackViewModel) // 실제 FeedbackWriteScreen Composable 사용
         }
         composable("settings") {
             SettingsScreen( // 실제 SettingsScreen Composable 사용
@@ -119,6 +128,9 @@ fun AppNavGraph(
                 onAccountClick = { navController.navigate("profile/me") }, // 계정 클릭 시 내 프로필로 이동
                 onItemClick = { item -> /* 아이템 클릭 */ }
             )
+        }
+        composable("mypoll") { // <<--- 새로운 경로 추가
+            MyPollScreen(navController) // MyPollScreen 연결
         }
     }
 }
