@@ -292,7 +292,7 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
+                    containerColor = Color(0xFFE6F0FA),
                     titleContentColor = Color.Black,
                     actionIconContentColor = Color.Black
                 )

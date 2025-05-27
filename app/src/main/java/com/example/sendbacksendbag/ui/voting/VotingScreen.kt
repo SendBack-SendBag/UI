@@ -54,7 +54,7 @@ fun PollScreen(navController: NavController) {
             TopAppBar(
                 title = { /* 현재 화면에서는 제목이 TopAppBar에 없음 */ },
                 navigationIcon = {
-                    IconButton(onClick = { /* 뒤로가기 동작 */ }) {
+                    IconButton(onClick = {navController.popBackStack()}) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "뒤로가기"
@@ -110,7 +110,7 @@ fun PollContent(modifier: Modifier = Modifier) {
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Row {
-            Spacer(modifier = Modifier.padding(10.dp)) // 왼쪽 여백
+            Spacer(modifier = Modifier.padding(20.dp)) // 왼쪽 여백
             Text(
                 text = "오늘의 투표",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
