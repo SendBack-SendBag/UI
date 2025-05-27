@@ -73,4 +73,10 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.play.services.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.credentials.play.services.auth) // Google Play 서비스 기반 Credential Provider
+    implementation(libs.googleid) // Google ID 라이브러리
+    implementation(libs.firebase.auth)
 }
