@@ -21,9 +21,9 @@ fun Sending(
     userName: String = "박지열",
     message: String ="니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;",
     navController: NavHostController,
-    onBack: () -> Unit = {},
+    onBack: () -> Unit = {navController.popBackStack()},
     onCategory: () -> Unit = {},
-    onSend: () -> Unit = {}
+    onSend: () -> Unit = {navController.navigate("send")}
 ) {Box {
     Column(
         modifier = Modifier
