@@ -31,9 +31,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
+import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import java.io.File
@@ -55,7 +58,7 @@ private const val TEMP_PROFILE_IMAGE_FILENAME = "temp_profile_image.jpg"
 
 
 @Composable
-fun ProfileScreenContainer() {
+fun ProfileScreenContainer(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = remember {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -211,6 +214,7 @@ fun ProfileScreen(
     onProfileImageChangeClick: () -> Unit,
     onProfileDataChange: (ProfileData) -> Unit
 ) {
+    val navController = rememberNavController()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -249,6 +253,14 @@ fun ProfileScreen(
                 isEditing = isEditing,
                 onProfileImageChangeClick = onProfileImageChangeClick,
                 onProfileDataChange = onProfileDataChange
+            )
+        }
+        Box{
+            ExpandableFabExample(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                navController = navController
             )
         }
     }
@@ -455,6 +467,7 @@ fun formatDisplayTime(timeString: String): String {
 @Composable
 fun DefaultPreview() {
     SendBackSendBagTheme {
-        ProfileScreenContainer()
+        val navController = rememberNavController()
+        ProfileScreenContainer(navController)
     }
 }

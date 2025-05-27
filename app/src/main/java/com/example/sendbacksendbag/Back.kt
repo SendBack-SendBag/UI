@@ -39,6 +39,7 @@ import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -118,7 +119,7 @@ fun InboxScreen(navController: NavController?) {
         Message(
             id = "rabbit",
             name = "잠만 자는 토끼",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago",
             hasActionButton = true
@@ -126,21 +127,21 @@ fun InboxScreen(navController: NavController?) {
         Message(
             id = "horse",
             name = "코딩하는 말",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago"
         ),
         Message(
             id = "otter",
             name = "배 긁고 있는 수달",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago"
         ),
         Message(
             id = "badger",
             name = "춤을 추는 오소리",
-            avatarRes = R.drawable.example,
+            avatarRes = R.drawable.example2,
             content = "메시지가 도착했습니다!",
             time = "8m ago"
         )
@@ -148,16 +149,8 @@ fun InboxScreen(navController: NavController?) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "받은 메시지",
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 20.sp
-                    )
-                },
-                backgroundColor = Color.White,
-                elevation = 0.dp
+            androidx.compose.material3.TopAppBar(
+                title = { androidx.compose.material3.Text(text = "보낸 메시지", fontWeight = FontWeight.Black) }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(8.dp))
@@ -296,7 +289,7 @@ fun ChatScreen(navController: NavController?, userId: String, feedbackViewModel:
             .fillMaxSize()
             .background(Color(0xFFE6F0FA))
         ) {
-            // Top App Bar with back button
+            // Top App Bar with back button (설정 버튼 제거)
             TopAppBar(
                 title = {
                     Text(
@@ -655,7 +648,7 @@ fun ExpandableFabExample(
         }
         FloatingActionButton(
             onClick = { expanded = !expanded },
-            backgroundColor = Color.LightGray
+            backgroundColor = Color.LightGray  // 배경색을 회색으로 변경
         ) {
             Icon(
                 imageVector = if (expanded) Icons.Default.Close else Icons.Default.MoreVert,
@@ -682,6 +675,7 @@ private fun MiniFab(
     }
 }
 
+
 /**
  * Back 액티비티 클래스
  */
@@ -691,6 +685,7 @@ class Back : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SendBackSendBagTheme {
+                val navController = rememberNavController()
                 val userId = intent.getStringExtra("userId") ?: "rabbit"
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
                 val feedbackViewModel = viewModel<FeedbackViewModel>()
@@ -723,13 +718,8 @@ class FeedbackViewModel : ViewModel() {
     }
 }
 
-// 피드백 작성 화면 수정
 @Composable
-fun FeedbackWriteScreen(
-    navController: NavController?,
-    receiverName: String,
-    feedbackViewModel: FeedbackViewModel = viewModel()
-) {
+fun FeedbackWriteScreen(navController: NavController?, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel()) {
     val context = LocalContext.current
     var feedbackText by remember { mutableStateOf("") }
 
@@ -810,7 +800,7 @@ fun FeedbackWriteScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 전송 버튼 영역 - 피드백을 저장하고 이전 화면으로 돌아가도록 수정
+                // 전송 버튼 영역 (피드백 남기기 버튼과 동일한 스타일로 변경)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

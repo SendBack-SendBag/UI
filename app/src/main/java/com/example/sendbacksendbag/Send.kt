@@ -30,14 +30,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sendbacksendbag.R
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavController
+import com.example.sendbacksendbag.*
+import com.example.sendbacksendbag.R
+import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
+import com.example.sendbacksendbag.ui.voting.PollScreen
 
 // 메시지 데이터 모델
 data class Message(
@@ -56,8 +58,35 @@ fun AppNavGraph() {
         composable("send") {
             Send(navController)
         }
+        composable("sending"){
+            Sending("박지열","니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;",navController)
+        }
         composable("sended") {
             Sended(navController)
+        }
+        composable("profile"){
+            ProfileScreenContainer(navController)
+        }
+        composable("voting"){
+            PollScreen(navController)
+        }
+        composable("inbox") {
+            InboxScreen(navController = navController)
+        }
+        composable("chat/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            ChatScreen(navController = navController, userId = userId)
+        }
+        composable("feedback/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            val receiverName = when (userId) {
+                "rabbit" -> "잠만 자는 토끼"
+                "horse" -> "코딩하는 말"
+                "otter" -> "배 긁고 있는 수달"
+                "badger" -> "춤을 추는 오소리"
+                else -> "사용자"
+            }
+            FeedbackWriteScreen(navController = navController, receiverName = receiverName)
         }
     }
 }
@@ -135,46 +164,11 @@ private fun MessageItem(
             )
             Text(
                 text = msg.content,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
         }
         Text(text = msg.time, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-    }
-}
-@Composable
-fun ExpandableFabExample(
-    modifier: Modifier = Modifier,
-    navController: NavController
-) {
-    var expanded by remember { mutableStateOf(false) }
-    Column(
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = modifier.padding(16.dp)
-    ) {
-        AnimatedVisibility(
-            visible = expanded,
-            enter = fadeIn() + slideInVertically { it },
-            exit = fadeOut() + slideOutVertically { it }
-        ) {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                MiniFab(icon = Icons.Default.Settings, onClick = {})
-                MiniFab(icon = Icons.Default.Send, onClick = {navController.navigate("send")})
-                MiniFab(icon = Icons.Default.Email, onClick = {})
-                MiniFab(icon = Icons.Default.Lock, onClick = {})
-                MiniFab(icon = Icons.Default.Person, onClick = {})
-            }
-        }
-        FloatingActionButton(onClick = { expanded = !expanded }) {
-            Icon(
-                imageVector = if (expanded) Icons.Default.Close else Icons.Default.MoreVert,
-                contentDescription = null
-            )
-        }
     }
 }
 
