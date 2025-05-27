@@ -135,7 +135,7 @@ fun InboxScreen(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             androidx.compose.material3.TopAppBar(
-                title = { androidx.compose.material3.Text(text = "보낸 메시지", fontWeight = FontWeight.Black) }
+                title = { androidx.compose.material3.Text(text = "받은 메시지", fontWeight = FontWeight.Black) }
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(8.dp))
@@ -260,7 +260,7 @@ fun ChatScreen(navController: NavController, userId: String) {
             .background(Color(0xFFE6F0FA))
         ) {
             // Top App Bar with back button (설정 버튼 제거)
-            TopAppBar(
+            androidx.compose.material3.TopAppBar(
                 title = {
                     Text(
                         text = userName,
@@ -282,8 +282,11 @@ fun ChatScreen(navController: NavController, userId: String) {
                         )
                     }
                 },
-                backgroundColor = Color.White,
-                elevation = 0.dp
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    actionIconContentColor = Color.Black
+                )
             )
 
             // 상단바와 채팅 메시지 사이에 공백 추가
@@ -550,7 +553,7 @@ fun ExpandableFabExample(modifier: Modifier = Modifier,
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MiniFab(icon = Icons.Default.Settings, onClick = {})
+                MiniFab(icon = Icons.Default.Settings, onClick = {navController.navigate("settings")})
                 MiniFab(icon = Icons.AutoMirrored.Filled.Send, onClick = {navController.navigate("send")})
                 MiniFab(icon = Icons.Default.Email, onClick = {navController.navigate("inbox")})
                 // 자물쇠 아이콘을 투표 관련 아이콘으로 변경
