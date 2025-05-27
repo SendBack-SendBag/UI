@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import com.example.sendbacksendbag.*
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.friends.FriendsScreen
+import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.ui.profile.ProfileData
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.PollScreen
@@ -52,6 +53,9 @@ fun AppNavGraph() {
         navController = navController,
         startDestination = "home"
     ) {
+        composable("login"){
+            AuthScreen(navController)
+        }
         composable("home") {
             HomeScreen(
                 navController = navController,
@@ -170,7 +174,8 @@ fun SendScreen(
                     IconButton(onClick = {navController.navigate("settings")}) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
+                            contentDescription = "Settings",
+                            modifier = Modifier.size(30.dp)
                         )
                     }
                 }

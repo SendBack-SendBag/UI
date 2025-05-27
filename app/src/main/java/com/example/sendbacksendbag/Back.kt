@@ -140,7 +140,9 @@ fun InboxScreen(navController: NavController) {
                     androidx.compose.material3.IconButton(onClick = {navController.navigate("settings")}) {
                         androidx.compose.material3.Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
+                            contentDescription = "Settings",
+                            modifier = Modifier.size(30.dp)
+
                         )
                     }
                 }
