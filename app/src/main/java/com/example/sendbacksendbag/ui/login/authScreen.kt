@@ -50,8 +50,8 @@ fun AuthScreen(navController: NavController,authViewModel: AuthViewModel = viewM
     }
 
     // 로그인 성공 시 처리 (예: 메인 화면으로 이동)
-    LaunchedEffect(authState.isAuthenticated) {
-        if (authState.isAuthenticated) {
+    LaunchedEffect(authState.isLoggedIn) {
+        if (authState.isLoggedIn) {
             Toast.makeText(context, "${authState.userEmail}님, 환영합니다!", Toast.LENGTH_SHORT).show()
             // 여기에 메인 화면으로 이동하는 로직 추가
             navController.navigate("home")
