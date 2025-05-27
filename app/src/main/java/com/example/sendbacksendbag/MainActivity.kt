@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
             SendBackSendBagTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    AppNavGraph()
+                    AppEntryPoint()
                 }
             }
         }
