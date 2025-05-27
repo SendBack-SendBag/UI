@@ -82,38 +82,7 @@ data class ChatMessage(
 )
 
 @Composable
-fun MainApp() {
-    val navController = rememberNavController()
-    val feedbackViewModel = viewModel<FeedbackViewModel>()
-
-    NavHost(navController = navController, startDestination = "inbox") {
-        composable("inbox") {
-            InboxScreen(navController = navController)
-        }
-        composable("chat/{userId}") { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            ChatScreen(navController = navController, userId = userId, feedbackViewModel = feedbackViewModel)
-        }
-        composable("feedback/{userId}") { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            val receiverName = when (userId) {
-                "rabbit" -> "잠만 자는 토끼"
-                "horse" -> "코딩하는 말"
-                "otter" -> "배 긁고 있는 수달"
-                "badger" -> "춤을 추는 오소리"
-                else -> "사용자"
-            }
-            FeedbackWriteScreen(
-                navController = navController,
-                receiverName = receiverName,
-                feedbackViewModel = feedbackViewModel
-            )
-        }
-    }
-}
-
-@Composable
-fun InboxScreen(navController: NavController?) {
+fun InboxScreen(navController: NavController) {
     val context = LocalContext.current
     val sampleMessages = listOf(
         Message(
@@ -247,7 +216,7 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
 
 
 @Composable
-fun ChatScreen(navController: NavController?, userId: String, feedbackViewModel: FeedbackViewModel = viewModel()) {
+fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: FeedbackViewModel = viewModel()) {
     val context = LocalContext.current
     var isLiked by remember { mutableStateOf(false) }
     var isDisliked by remember { mutableStateOf(false) }
@@ -615,7 +584,7 @@ fun BlackHorizontalLine() {
 @Composable
 fun ExpandableFabExample(
     modifier: Modifier = Modifier,
-    navController: NavController? = null,
+    navController: NavController,
     onEmailClicked: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -703,11 +672,11 @@ class Back : ComponentActivity() {
                 val feedbackViewModel = viewModel<FeedbackViewModel>()
 
                 when (screenType) {
-                    "inbox" -> InboxScreen(navController = null)
-                    "chat" -> ChatScreen(navController = null, userId = userId, feedbackViewModel = feedbackViewModel)
+                    "inbox" -> InboxScreen(navController)
+                    "chat" -> ChatScreen(navController, userId = userId, feedbackViewModel = feedbackViewModel)
                     "feedback" -> {
                         val receiverName = intent.getStringExtra("receiverName") ?: ""
-                        FeedbackWriteScreen(navController = null, receiverName = receiverName, feedbackViewModel = feedbackViewModel)
+                        FeedbackWriteScreen(navController, receiverName = receiverName, feedbackViewModel = feedbackViewModel)
                     }
                 }
             }
@@ -731,7 +700,7 @@ class FeedbackViewModel : ViewModel() {
 }
 
 @Composable
-fun FeedbackWriteScreen(navController: NavController?, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel()) {
+fun FeedbackWriteScreen(navController: NavController, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel()) {
     val context = LocalContext.current
     var feedbackText by remember { mutableStateOf("") }
 
@@ -859,13 +828,5 @@ fun FeedbackWriteScreen(navController: NavController?, receiverName: String,  fe
                 .padding(16.dp),
             navController = navController
         )
-    }
-}
-
-// ActivityMain에서 사용할 수 있는 앱의 진입점
-@Composable
-fun AppEntryPoint() {
-    MaterialTheme {
-        MainApp()
     }
 }
