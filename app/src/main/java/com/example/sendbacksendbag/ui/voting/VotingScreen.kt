@@ -47,6 +47,9 @@ fun PollScreen(navController: NavController) {
     // SendBackSendBagTheme { // 앱의 실제 테마 사용
     Box{
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFD6E9FA)),
         topBar = {
             TopAppBar(
                 title = { /* 현재 화면에서는 제목이 TopAppBar에 없음 */ },
@@ -73,13 +76,13 @@ fun PollScreen(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
+                    containerColor = Color(0xFFD6E9FA),
                     navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
                     actionIconContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color(0xFFD6E9FA)
     ) { innerPadding ->
         PollContent(Modifier.padding(innerPadding))
     }
@@ -106,25 +109,32 @@ fun PollContent(modifier: Modifier = Modifier) {
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "오늘의 투표",
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Surface(
-            shape = RoundedCornerShape(50),
-            color = Color(0xFFE0E0E0).copy(alpha = 0.7f),
-            modifier = Modifier
-                .wrapContentWidth()
-                .padding(bottom = 24.dp)
-        ) {
+        Row {
+            Spacer(modifier = Modifier.padding(10.dp)) // 왼쪽 여백
             Text(
-                text = "박지열님이 게시한 투표",
-                fontSize = 14.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                text = "오늘의 투표",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
+        }
+        Row {
+            Spacer(modifier = Modifier.padding(10.dp))
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = Color(0xFFE0E0E0).copy(alpha = 0.7f),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .padding(bottom = 24.dp)
+            ) {
+
+                Spacer(modifier = Modifier.padding(10.dp))
+                Text(
+                    text = "박지열님이 게시한 투표",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
         }
 
         FeedbackCard(
@@ -168,7 +178,9 @@ fun FeedbackCard(onChatIconClick: () -> Unit) {
             .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFFFFF) // 흰색 배경
+        )
     ) {
         Column(
             modifier = Modifier
