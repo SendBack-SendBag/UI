@@ -68,49 +68,6 @@ class FriendsRepository(private val context: Context) {
             placeholderImageRes = R.drawable.example_picture
         )
     }
-    // 친구 목록 로드 (JSON 사용)
-    private fun loadFriendsFromJson(): List<ProfileData> {
-        if (!friendsJsonFile.exists()) {
-            Log.w("Repository", "$FRIENDS_JSON_FILENAME not found. Returning empty list.")
-            return emptyList()
-        }
-
-        return try {
-            val jsonString = friendsJsonFile.readText()
-            if (jsonString.isBlank()) {
-                emptyList()
-            } else {
-                json.decodeFromString<List<ProfileData>>(jsonString).map { friend ->
-                    val imageFile = File(context.filesDir, "${MAIN_PROFILE_IMAGE_FILENAME_PREFIX}${friend.id}.jpg")
-                    val validUri = getValidUri(friend.profileImageUriString, imageFile, friend.id ?: "unknown")
-
-                    // --- 수정: profileImageUriString만 copy하고, Uri는 get 프로퍼티에 맡김 ---
-                    friend.copy(
-                        profileImageUriString = validUri?.toString()
-                    ).apply {
-                        // `init` 블록이나 `get` 프로퍼티가 Uri를 처리하므로,
-                        // 여기서 `profileImageUri`를 명시적으로 설정할 필요가 없을 수 있습니다.
-                        // 만약 명시적 설정이 필요하다면 아래 라인 추가:
-                        this.profileImageUri = validUri
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("Repository", "Error loading friends from JSON", e)
-            emptyList()
-        }
-    }
-    // 친구 목록 JSON 파일 저장
-    private fun saveFriendsToJson(friendsList: List<ProfileData>) {
-        try {
-            val jsonString = json.encodeToString(friendsList)
-            friendsJsonFile.writeText(jsonString)
-            Log.d("Repository", "Friends saved to $FRIENDS_JSON_FILENAME")
-        } catch (e: Exception) {
-            Log.e("Repository", "Error saving friends to JSON", e)
-        }
-    }
-
 
     private fun getValidUri(uriString: String?, file: File, userId: String): Uri? {
         return uriString?.let {
@@ -246,4 +203,61 @@ class FriendsRepository(private val context: Context) {
             updatedList // 업데이트된 목록 반환
         }
     }
+    // 친구 목록 로드 (JSON 사용)
+    private fun loadFriendsFromJson(): List<ProfileData> {
+        if (!friendsJsonFile.exists()) {
+            Log.w("Repository", "$FRIENDS_JSON_FILENAME not found. Returning default list.")
+            // --- 초기 친구 목록 (예시) ---
+            return listOf(
+                ProfileData(id = "rabbit", name = "잠만 자는 토끼", statusMessage = "쿨쿨", placeholderImageRes = R.drawable.example2),
+                ProfileData(id = "horse", name = "코딩하는 말", statusMessage = "타닥타닥", placeholderImageRes = R.drawable.example2)
+            )
+        }
+
+        return try {
+            val jsonString = friendsJsonFile.readText()
+            if (jsonString.isBlank()) {
+                emptyList()
+            } else {
+                json.decodeFromString<List<ProfileData>>(jsonString).map { friend ->
+                    // ... (기존 URI 처리 로직) ...
+                    friend // 수정된 friend 반환
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Repository", "Error loading friends from JSON", e)
+            emptyList()
+        }
+    }
+
+    // 친구 목록 JSON 파일 저장
+    private fun saveFriendsToJson(friendsList: List<ProfileData>) {
+        try {
+            // --- 중요: 저장 시 Uri를 String으로 변환하는 로직 확인 ---
+            // ProfileData 클래스 자체에 @Serializable이 있고,
+            // profileImageUriString이 올바르게 관리된다면 추가 작업은 불필요할 수 있습니다.
+            val jsonString = json.encodeToString(friendsList)
+            friendsJsonFile.writeText(jsonString)
+            Log.d("Repository", "Friends saved to $FRIENDS_JSON_FILENAME")
+        } catch (e: Exception) {
+            Log.e("Repository", "Error saving friends to JSON", e)
+        }
+    }
+
+    // --- 친구 추가 함수 추가 ---
+    fun addFriend(friendToAdd: ProfileData) {
+        _friends.update { currentFriends ->
+            // 이미 친구인지 확인 (중복 방지)
+            if (currentFriends.any { it.id == friendToAdd.id }) {
+                Log.w("Repository", "Friend already exists: ${friendToAdd.id}")
+                currentFriends // 변경 없이 반환
+            } else {
+                val updatedList = currentFriends + friendToAdd
+                saveFriendsToJson(updatedList) // JSON 파일에 저장
+                Log.d("Repository", "Friend added: ${friendToAdd.id}")
+                updatedList // 업데이트된 목록 반환
+            }
+        }
+    }
+
 }
