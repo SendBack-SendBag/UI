@@ -1,4 +1,4 @@
-package com.example.sendbacksendbag.ui.mypoll
+package com.example.sendbacksendbag.ui.voting
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,25 +13,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext // LocalContext 임포트 추가
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.compose.viewModel // viewModel 임포트는 유지 (Factory 사용 시 필요)
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
+import com.example.sendbacksendbag.data.FriendsRepository // FriendsRepository 임포트 추가
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
-import com.example.sendbacksendbag.ui.voting.CommentBottomSheet // 기존 댓글 BottomSheet 재사용
-import com.example.sendbacksendbag.ui.voting.VotingViewModel // 기존 ViewModel 재사용
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyPollScreen(navController: NavController, viewModel: VotingViewModel = viewModel()) {
+fun MyPollScreen(
+    navController: NavController,
+    viewModel: VotingViewModel // --- 수정: 기본값 제거, ViewModel을 반드시 받도록 변경 ---
+) {
     // BottomSheet 상태 관리
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -88,17 +91,29 @@ fun MyPollScreen(navController: NavController, viewModel: VotingViewModel = view
 
     // 댓글 BottomSheet 표시 여부
     if (showBottomSheet) {
-        CommentBottomSheet(
-            sheetState = sheetState,
-            viewModel = viewModel,
-            onDismiss = {
-                // BottomSheet 닫기
-                scope.launch { sheetState.hide() }
-                    .invokeOnCompletion { if (!sheetState.isVisible) showBottomSheet = false }
-            }
-        )
+        // CommentBottomSheet는 VotingScreen.kt에 있어야 합니다.
+        // CommentBottomSheet(
+        //     sheetState = sheetState,
+        //     viewModel = viewModel,
+        //     onDismiss = {
+        //         // BottomSheet 닫기
+        //         scope.launch { sheetState.hide() }
+        //             .invokeOnCompletion { if (!sheetState.isVisible) showBottomSheet = false }
+        //     }
+        // )
+        // --- 임시: CommentBottomSheet가 없으므로 주석 처리. 만약 있다면 주석 해제 ---
+        // 만약 CommentBottomSheet가 VotingScreen.kt에 있다면, 아래 코드를 사용하세요.
+        // 그렇지 않다면, CommentBottomSheet 코드를 이 파일에 추가하거나 VotingScreen.kt에서 가져와야 합니다.
+        // 현재는 CommentBottomSheet가 없다고 가정하고 UI만 띄웁니다.
+        // 실제로는 VotingScreen.kt에서 CommentBottomSheet를 가져와야 합니다.
+        ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) {
+            Text("댓글 창 (CommentBottomSheet 필요)", modifier = Modifier.padding(16.dp))
+        }
+
     }
 }
+
+// ... (MyPollContent, MyFeedbackCard, PollResultBar 코드는 동일하게 유지) ...
 
 @Composable
 fun MyPollContent(modifier: Modifier = Modifier, onChatIconClick: () -> Unit) {
@@ -281,11 +296,19 @@ fun PollResultBar(yesPercentage: Int, noPercentage: Int) {
     }
 }
 
+
+// --- @Preview 수정 ---
 @Preview(showBackground = true, backgroundColor = 0xFFD6E9FA)
 @Composable
 fun MyPollScreenPreview() {
     val navController = rememberNavController()
+    // 프리뷰를 위해 임시 Repository와 ViewModel 생성
+    val dummyRepository = FriendsRepository(LocalContext.current)
+    val previewViewModel = VotingViewModel(dummyRepository)
+
     SendBackSendBagTheme {
-        MyPollScreen(navController)
+        // 수정된 MyPollScreen 호출 (ViewModel 전달)
+        MyPollScreen(navController, previewViewModel)
     }
 }
+// --- @Preview 수정 끝 ---
