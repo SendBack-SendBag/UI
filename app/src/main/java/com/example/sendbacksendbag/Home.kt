@@ -39,7 +39,6 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
                 .background(Color.White)
 
         ) {
@@ -53,7 +52,11 @@ fun HomeScreen(
                             modifier = Modifier.size(30.dp)
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    actionIconContentColor = Color.Black                )
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(30.dp))

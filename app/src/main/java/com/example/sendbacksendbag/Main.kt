@@ -18,11 +18,9 @@ import com.example.sendbacksendbag.data.FriendsRepository
 import com.example.sendbacksendbag.ui.friends.FriendsScreen
 import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
-import com.example.sendbacksendbag.ui.voting.PollScreen
 import com.example.sendbacksendbag.authentication.AuthViewModel
-import com.example.sendbacksendbag.ui.mypoll.MyPollScreen
-import com.example.sendbacksendbag.ui.voting.VotingViewModel
-import com.example.sendbacksendbag.ui.voting.VotingViewModelFactory
+import com.example.sendbacksendbag.ui.voting.MyPollScreen
+import com.example.sendbacksendbag.ui.voting.*
 
 // import com.example.sendbacksendbag.FeedbackViewModel // ViewModel import (실제 경로 확인)
 // import com.example.sendbacksendbag.R // R import
@@ -105,7 +103,7 @@ fun AppNavGraph(
             )
         }
         composable("voting") {
-            PollScreen(navController, votingViewModel) // 생성된 ViewModel 전달
+            PollListScreen(listOf(myPoll("나", "경청 후 말하기", "본인이 투표를 게시했습니다")),listOf(Poll("박지열", "먼저 듣고, 나중에 말하기", "박지열 님이 투표를 게시했습니다."), Poll("김승주", "끝까지 들어주는 작은 습관", "김승주 님이 투표를 게시했습니다."),Poll("권민서", "말하기 전 한 번 더 귀 기울이기", "권민서 님이 투표를 게시했습니다."),Poll("최승제", "상대의 마지막 말까지 기다리기", "최승제 님이 투표를 게시했습니다.")), navController) // 예시 데이터 사용)
         }
         composable("inbox") {
             InboxScreen(navController = navController) // 실제 InboxScreen Composable 사용
@@ -130,7 +128,11 @@ fun AppNavGraph(
             )
         }
         composable("mypoll") { // <<--- 새로운 경로 추가
-            MyPollScreen(navController) // MyPollScreen 연결
+            MyPollScreen(navController,votingViewModel) // MyPollScreen 연결
+        }
+        composable("poll/{pollId}") { backStackEntry ->
+            val pollId = backStackEntry.arguments?.getString("pollId") ?: ""
+            PollScreen(pollId, navController, votingViewModel) // PollScreen 연결
         }
     }
 }

@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollScreen(navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
+fun PollScreen(name:String,navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -85,7 +85,7 @@ fun PollScreen(navController: NavController, viewModel: VotingViewModel = viewMo
             },
             containerColor = Color(0xFFD6E9FA)
         ) { innerPadding ->
-            PollContent(Modifier.padding(innerPadding), viewModel)// ViewModel 전달
+            PollContent(name,Modifier.padding(innerPadding), viewModel)// ViewModel 전달
         }
         ExpandableFabExample(
             modifier = Modifier
@@ -113,7 +113,7 @@ fun PollScreen(navController: NavController, viewModel: VotingViewModel = viewMo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollContent(modifier: Modifier = Modifier, viewModel: VotingViewModel) { // ViewModel 받기
+fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingViewModel) { // ViewModel 받기
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -142,7 +142,7 @@ fun PollContent(modifier: Modifier = Modifier, viewModel: VotingViewModel) { // 
             ) {
                 Spacer(modifier = Modifier.padding(10.dp))
                 Text(
-                    text = "박지열님이 게시한 투표",
+                    text = name+"님이 게시한 투표",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -150,7 +150,7 @@ fun PollContent(modifier: Modifier = Modifier, viewModel: VotingViewModel) { // 
             }
         }
 
-        FeedbackCard(
+        FeedbackCard(name,
             onChatIconClick = {
                 scope.launch {
                     showBottomSheet = true
@@ -177,7 +177,8 @@ fun PollContent(modifier: Modifier = Modifier, viewModel: VotingViewModel) { // 
 }
 
 @Composable
-fun FeedbackCard(onChatIconClick: () -> Unit) {
+fun FeedbackCard(name:String,
+    onChatIconClick: () -> Unit) {
     var selectedOption by remember { mutableStateOf<PollOption?>(null) }
 
     Card(
@@ -194,7 +195,7 @@ fun FeedbackCard(onChatIconClick: () -> Unit) {
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             Text(
-                text = "박지열님이 받은 피드백",
+                text = name+"님이 받은 피드백",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -473,11 +474,3 @@ fun OptionItem(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFE7F0FE)
-@Composable
-fun PollScreenPreview() {
-    val navController = rememberNavController()
-    SendBackSendBagTheme {
-        PollScreen(navController)
-    }
-}

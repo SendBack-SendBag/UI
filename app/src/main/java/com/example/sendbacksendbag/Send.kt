@@ -64,7 +64,7 @@ fun SendScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black) },
+                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black, fontSize = 30.sp) },
                 actions = {
                     IconButton(onClick = {navController.navigate("settings")}) {
                         Icon(

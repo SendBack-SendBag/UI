@@ -1,4 +1,4 @@
-package com.example.sendbacksendbag.ui.mypoll
+package com.example.sendbacksendbag.ui.voting
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyPollScreen(navController: NavController, viewModel: VotingViewModel = viewModel()) {
+fun MyPollScreen(navController: NavController, viewModel: VotingViewModel) {
     // BottomSheet 상태 관리
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -281,11 +281,3 @@ fun PollResultBar(yesPercentage: Int, noPercentage: Int) {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFD6E9FA)
-@Composable
-fun MyPollScreenPreview() {
-    val navController = rememberNavController()
-    SendBackSendBagTheme {
-        MyPollScreen(navController)
-    }
-}
