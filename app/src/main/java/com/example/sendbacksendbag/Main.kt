@@ -5,8 +5,6 @@ import Send // 실제 Composable import 필요
 import Sended // 실제 Composable import 필요
 import Sending // 실제 Composable import 필요
 import SettingsScreen // 실제 Composable import 필요
-import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,9 +18,12 @@ import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.PollScreen
 import com.example.sendbacksendbag.authentication.AuthViewModel
-import com.example.sendbacksendbag.ui.mypoll.MyPollScreen
+import com.example.sendbacksendbag.ui.voting.MyPollScreen
 import com.example.sendbacksendbag.ui.voting.VotingViewModel
 import com.example.sendbacksendbag.ui.voting.VotingViewModelFactory
+import com.example.sendbacksendbag.ui.friends.AddFriendScreen
+import com.example.sendbacksendbag.ui.friends.FriendsViewModel
+import com.example.sendbacksendbag.ui.friends.FriendsViewModelFactory
 
 // import com.example.sendbacksendbag.FeedbackViewModel // ViewModel import (실제 경로 확인)
 // import com.example.sendbacksendbag.R // R import
@@ -43,6 +44,7 @@ fun AppNavGraph(
 
     val feedbackViewModel = viewModel<FeedbackViewModel>()
 
+
     // FeedbackViewModel (필요 시 실제 ViewModel 사용)
     // val feedbackViewModel: FeedbackViewModel = viewModel()
     LaunchedEffect(key1 = Unit) {
@@ -54,6 +56,9 @@ fun AppNavGraph(
     val startDestination = remember(authState.isLoggedIn) {
         if (authState.isLoggedIn) "home" else "login"
     }
+    val friendsViewModel: FriendsViewModel = viewModel(
+        factory = FriendsViewModelFactory(friendsRepository)
+    )
 
 
     NavHost(
@@ -96,12 +101,19 @@ fun AppNavGraph(
         composable("friends") {
             FriendsScreen(
                 navController = navController,
-                myProfile = myProfile, // StateFlow에서 온 최신 프로필 전달
-                friends = friendsList, // StateFlow에서 온 최신 친구 목록 전달
+                myProfile = myProfile,
+                friends = friendsList,
                 onFriendClick = { profile ->
-                    navController.navigate("profile/${profile.id}") // null 체크 강화 또는 기본값 설정 필요
+                    navController.navigate("profile/${profile.id}")
                 },
-                onAddFriendClick = { /* TODO: 친구 추가 로직 */ }
+                // --- 친구 추가 버튼 클릭 시 addFriend 화면으로 이동 ---
+                onAddFriendClick = { navController.navigate("addFriend") }
+            )
+        }
+        composable("addFriend") {
+            AddFriendScreen(
+                navController = navController,
+                friendsViewModel = friendsViewModel // 생성된 ViewModel 전달
             )
         }
         composable("voting") {
@@ -130,7 +142,7 @@ fun AppNavGraph(
             )
         }
         composable("mypoll") { // <<--- 새로운 경로 추가
-            MyPollScreen(navController) // MyPollScreen 연결
+            MyPollScreen(navController, votingViewModel) // MyPollScreen 연결
         }
     }
 }
