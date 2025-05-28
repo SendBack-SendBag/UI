@@ -296,19 +296,3 @@ fun PollResultBar(yesPercentage: Int, noPercentage: Int) {
     }
 }
 
-
-// --- @Preview 수정 ---
-@Preview(showBackground = true, backgroundColor = 0xFFD6E9FA)
-@Composable
-fun MyPollScreenPreview() {
-    val navController = rememberNavController()
-    // 프리뷰를 위해 임시 Repository와 ViewModel 생성
-    val dummyRepository = FriendsRepository(LocalContext.current)
-    val previewViewModel = VotingViewModel(dummyRepository)
-
-    SendBackSendBagTheme {
-        // 수정된 MyPollScreen 호출 (ViewModel 전달)
-        MyPollScreen(navController, previewViewModel)
-    }
-}
-// --- @Preview 수정 끝 ---
