@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -70,8 +71,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.coil.compose)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.runtime.compose)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
@@ -81,4 +82,6 @@ dependencies {
     implementation(libs.credentials.play.services.auth) // Google Play 서비스 기반 Credential Provider
     implementation(libs.googleid) // Google ID 라이브러리
     implementation(libs.firebase.auth)
+
+    implementation(libs.kotlinx.serialization.json)
 }
