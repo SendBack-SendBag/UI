@@ -163,10 +163,15 @@ fun AddFriendTextField(
         placeholder = { Text(placeholder, color = Color.Gray) },
         shape = RoundedCornerShape(8.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            containerColor = Color.White, // 배경 흰색
-            focusedBorderColor = Color.White, // 포커스 시 테두리 없음
-            unfocusedBorderColor = Color.White, // 기본 테두리 없음
-            cursorColor = MaterialTheme.colorScheme.primary
+            focusedContainerColor = Color.White,    // 포커스 시 배경 흰색
+            unfocusedContainerColor = Color.White,  // 비포커스 시 배경 흰색
+            focusedBorderColor = Color.Transparent, // 포커스 시 테두리 투명
+            unfocusedBorderColor = Color.Transparent, // 비포커스 시 테두리 투명
+            cursorColor = MaterialTheme.colorScheme.primary, // 커서 색상
+            focusedPlaceholderColor = Color.Gray,   // 플레이스홀더 색상 (포커스)
+            unfocusedPlaceholderColor = Color.Gray, // 플레이스홀더 색상 (비포커스)
+            focusedTextColor = Color.Black,         // 텍스트 색상 (포커스)
+            unfocusedTextColor = Color.Black        // 텍스트 색상 (비포커스)
         ),
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType)

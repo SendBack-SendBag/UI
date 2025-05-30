@@ -358,29 +358,30 @@ fun ProfileCard(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = formatDisplayTime(profileData.messageArrivalTime),
-                        onValueChange = { /* Do nothing, read-only */ },
-                        label = { Text(profileData.messageArrivalTimeLabel) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                focusManager.clearFocus()
-                                showTimePicker = true
-                            },
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.clock), // 시계 아이콘 (리소스 필요)
-                                contentDescription = "시간 선택",
-                                modifier = Modifier.clickable {
+                    if (isMyProfile){
+                        OutlinedTextField(
+                            value = formatDisplayTime(profileData.messageArrivalTime),
+                            onValueChange = { /* Do nothing, read-only */ },
+                            label = { Text(profileData.messageArrivalTimeLabel) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
                                     focusManager.clearFocus()
                                     showTimePicker = true
-                                }
-                            )
-                        }
-                    )
+                                },
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.clock), // 시계 아이콘 (리소스 필요)
+                                    contentDescription = "시간 선택",
+                                    modifier = Modifier.clickable {
+                                        focusManager.clearFocus()
+                                        showTimePicker = true
+                                    }
+                                )
+                            }
+                        )
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
@@ -398,18 +399,17 @@ fun ProfileCard(
                     Text(profileData.name, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    Text(profileData.messageArrivalTimeLabel, fontSize = 14.sp, color = Color.Gray)
+                    Text(formatDisplayTime(profileData.messageArrivalTime), fontSize = 14.sp, color = Color.Gray)
+
                     // --- MODIFICATION: Added Status Message back ---
                     Text(profileData.statusMessage, fontSize = 16.sp, color = Color.DarkGray)
                     Spacer(modifier = Modifier.height(16.dp)) // 상태 메시지와 시간 사이 간격
-
-                    Text(profileData.messageArrivalTimeLabel, fontSize = 14.sp, color = Color.Gray)
-                    Text(formatDisplayTime(profileData.messageArrivalTime), fontSize = 14.sp, color = Color.Gray)
                 }
 
                 // --- Spacer ---
                 val spacerHeight = if (isEditing) 30.dp
-                else if (isMyProfile) 250.dp
-                else 50.dp // 친구 프로필 보기 모드 (버튼 전 공간)
+                else  250.dp
 
                 Spacer(modifier = Modifier.height(spacerHeight))
 
