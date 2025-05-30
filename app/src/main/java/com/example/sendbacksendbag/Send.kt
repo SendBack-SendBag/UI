@@ -90,10 +90,15 @@ fun SendScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
             LazyColumn {
-                items(messages) { msg ->
-                    MessageItem(msg = msg, onClick = {
-                        navController.navigate("sended")
-                    })
+                items(messages.filter {
+                    it.name.contains(searchQuery, true)
+                }) { msg ->
+                    MessageItem(
+                        msg = msg,
+                        onClick = {
+                            navController.navigate("sended")
+                        }
+                    )
                 }
             }
         }
