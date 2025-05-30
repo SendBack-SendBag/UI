@@ -29,6 +29,7 @@ import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.profile.ProfileData
 import androidx.compose.ui.platform.LocalContext // Coil에 필요
 import com.example.sendbacksendbag.BlackHorizontalLine
+import com.example.sendbacksendbag.ui.profile.formatDisplayTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -161,7 +162,7 @@ fun FriendListItem(
         Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = "도착 시간: ${profile.messageArrivalTime.replace(" : ", ":")}",
+                        text = "도착 시간: ${formatDisplayTime(profile.messageArrivalTime)}",
                         fontSize = 13.sp,
                         color = Color.Gray
                     )

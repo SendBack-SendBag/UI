@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.androidx.foundation)
+    implementation(libs.foundation.layout)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
