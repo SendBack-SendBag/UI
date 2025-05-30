@@ -119,7 +119,7 @@ fun InboxScreen(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             androidx.compose.material3.TopAppBar(
-                title = { androidx.compose.material3.Text(text = "받은 메시지", fontWeight = FontWeight.Black) },
+                title = { androidx.compose.material3.Text(text = "받은 메시지", fontWeight = FontWeight.Black, fontSize = 30.sp) },
                 actions = {
                     androidx.compose.material3.IconButton(onClick = {navController.navigate("settings")}) {
                         androidx.compose.material3.Icon(
@@ -292,7 +292,7 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
+                    containerColor = Color(0xFFE6F0FA),
                     titleContentColor = Color.Black,
                     actionIconContentColor = Color.Black
                 )

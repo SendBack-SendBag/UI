@@ -1,5 +1,6 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -85,16 +86,12 @@ fun FeedbackDetailScreen(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 // 토글 스위치
-                var switched by remember { mutableStateOf(false) }
-                Switch(
-                    checked = switched,
-                    onCheckedChange = { switched = it },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color(0xFFFFE082),
-                        uncheckedThumbColor = Color(0xFFFFE082)
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color(0xFFFFE680), CircleShape)
                 )
             }
         }
