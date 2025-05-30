@@ -4,6 +4,7 @@ package com.example.sendbacksendbag.ui.profile
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
@@ -218,55 +220,58 @@ fun ProfileScreen(
     onProfileImageChangeClick: () -> Unit,
     onProfileDataChange: (ProfileData) -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("프로필", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
-                actions = {
-                    if (isEditing) {
-                        IconButton(onClick = onSaveClick) { Icon(Icons.Filled.Check, "저장") }
-                        IconButton(onClick = onCancelClick) { Icon(Icons.Filled.Close, "취소") }
-                    } else {
-                        IconButton(onClick = onEditClick) { Icon(Icons.Filled.Edit, "프로필 수정") }
+    Box {
+        Scaffold(
+            topBar = {
+                androidx.compose.material3.TopAppBar(
+                    title = {
+                        androidx.compose.material3.Text(
+                            text = "프로필",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 25.sp
+                        )
+                    },
+                    navigationIcon = {
+                        androidx.compose.material3.IconButton(onClick = {
+                            navController.popBackStack()
+                        }) {
+                            androidx.compose.material.Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black,
-                    actionIconContentColor = Color.Black
                 )
-            )
-        },
-        containerColor = Color.White
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(Color.White)
-                .verticalScroll(rememberScrollState())
-        ) {
-            HorizontalDivider(
-                color = Color.Black,
-                thickness = 1.dp,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            ProfileCard(
-                navController,
-                profileData = profileData,
-                isEditing = isEditing,
-                onProfileImageChangeClick = onProfileImageChangeClick,
-                onProfileDataChange = onProfileDataChange
-            )
-        }
-        Box{
-            ExpandableFabExample(
+            },
+            containerColor = Color.White
+        ) { innerPadding ->
+            Column(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-                navController = navController
-            )
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                HorizontalDivider(
+                    color = Color.Black,
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                ProfileCard(
+                    navController,
+                    profileData = profileData,
+                    isEditing = isEditing,
+                    onProfileImageChangeClick = onProfileImageChangeClick,
+                    onProfileDataChange = onProfileDataChange
+                )
+            }
         }
+        ExpandableFabExample(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            navController = navController
+        )
     }
 }
 

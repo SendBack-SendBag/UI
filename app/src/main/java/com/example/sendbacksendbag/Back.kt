@@ -570,16 +570,6 @@ fun ChatMessageItem(message: ChatMessage) {
 
 
 
-@Composable
-fun BlackHorizontalLine() {
-    Divider(
-        color = Color.Black,
-        thickness = 1.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    )
-}
 
 @Composable
 fun ExpandableFabExample(
