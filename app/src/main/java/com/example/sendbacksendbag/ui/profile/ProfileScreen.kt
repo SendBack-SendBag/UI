@@ -1,6 +1,5 @@
 package com.example.sendbacksendbag.ui.profile
 
-// import coil3.key.ObjectKey // 사용하지 않음
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -13,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
@@ -28,17 +28,16 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
-import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
+import com.example.sendbacksendbag.data.FriendsRepository
+import kotlinx.coroutines.flow.map
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -50,167 +49,159 @@ private const val KEY_NAME = "profile_name"
 private const val KEY_ARRIVAL_TIME_LABEL = "profile_arrival_time_label"
 private const val KEY_ARRIVAL_TIME = "profile_arrival_time"
 private const val KEY_STATUS_MESSAGE = "profile_status_message"
-private const val KEY_IMAGE_URI = "profile_image_uri"
+private const val KEY_IMAGE_URI_STRING = "profile_image_uri_string"
 
 // File Name Constants
-private const val MAIN_PROFILE_IMAGE_FILENAME = "profile_image.jpg"
+private const val MAIN_PROFILE_IMAGE_FILENAME_PREFIX = "profile_image_"
 private const val TEMP_PROFILE_IMAGE_FILENAME = "temp_profile_image.jpg"
 
 
 @Composable
-
-fun ProfileScreenContainer(navController: NavController, id: String?) {
+fun ProfileScreenContainer(
+    navController: NavController,
+    userIdFromNav: String,
+    friendsRepository: FriendsRepository // ViewModel 또는 Hilt 주입 권장
+) {
     val context = LocalContext.current
-    val sharedPreferences = remember {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    }
+    val isMyProfile = userIdFromNav == "me"
 
-    val mainProfileImageFile = remember { File(context.filesDir, MAIN_PROFILE_IMAGE_FILENAME) }
-    val tempProfileImageFile = remember { File(context.filesDir, TEMP_PROFILE_IMAGE_FILENAME) }
-
-    var profileDataState by remember {
-        val name = sharedPreferences.getString(KEY_NAME, "박지열") ?: "박지열"
-        val arrivalTimeLabel = sharedPreferences.getString(KEY_ARRIVAL_TIME_LABEL, "메시지 도착 시각") ?: "메시지 도착 시각"
-        val arrivalTime = sharedPreferences.getString(KEY_ARRIVAL_TIME, "20 : 00") ?: "20 : 00"
-        val statusMessage = sharedPreferences.getString(KEY_STATUS_MESSAGE, "오늘도 화이팅!") ?: "오늘도 화이팅!"
-        val imageUriString = sharedPreferences.getString(KEY_IMAGE_URI, null)
-
-        val initialImageUri = imageUriString?.let {
-            try {
-                val parsedUri = Uri.parse(it)
-                // 저장된 URI가 실제로 mainProfileImageFile을 가리키고 파일이 존재할 때만 유효한 것으로 간주
-                if (parsedUri.scheme == "file" && parsedUri.path == mainProfileImageFile.absolutePath && mainProfileImageFile.exists()) {
-                    parsedUri
-                } else {
-                    Log.w("ProfileLoad", "Stored image URI $it is invalid or file missing. Clearing.")
-                    // 유효하지 않으면 SharedPreferences에서도 해당 URI 정보를 지울 수 있음 (선택적)
-                    // sharedPreferences.edit().remove(KEY_IMAGE_URI).apply()
-                    null
-                }
-            } catch (e: Exception) {
-                Log.e("ProfileLoad", "Failed to parse stored URI: $it", e)
-                null
-            }
-        }
-
-        mutableStateOf(
-            ProfileData(
-                id = id,
-                name = name,
-                messageArrivalTimeLabel = arrivalTimeLabel,
-                messageArrivalTime = arrivalTime,
-                statusMessage = statusMessage,
-                profileImageUri = initialImageUri, // mainProfileImageFile의 URI 또는 null
+    // Repository의 StateFlow를 구독하여 최신 데이터를 받습니다.
+    val profileDataFromRepo by if (isMyProfile) {
+        friendsRepository.myProfile.collectAsState()
+    } else {
+        friendsRepository.friends.map { friends ->
+            friends.find { it.id == userIdFromNav }
+                ?: ProfileData( // 친구가 없을 때 기본값 (String을 받는 생성자 사용)
+                    id = userIdFromNav,
+                    name = "알 수 없는 사용자",
+                    statusMessage = "정보 없음",
+                    profileImageUriString = null,
+                    placeholderImageRes = R.drawable.example_picture
+                )
+        }.collectAsState(
+            initial = friendsRepository.getFriendById(userIdFromNav) ?: ProfileData(
+                id = userIdFromNav,
+                name = "알 수 없는 사용자",
+                statusMessage = "정보 없음",
+                profileImageUriString = null,
                 placeholderImageRes = R.drawable.example_picture
             )
         )
     }
-    var isEditing by remember { mutableStateOf(false) }
-    var tempProfileData by remember { mutableStateOf(profileDataState.copy()) }
+
+    var isEditingState by remember { mutableStateOf(false) }
+    var tempProfileData by remember(profileDataFromRepo, isEditingState) {
+        mutableStateOf(profileDataFromRepo.copy())
+    }
+
+    val tempProfileImageFile = remember { File(context.filesDir, TEMP_PROFILE_IMAGE_FILENAME) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { selectedUri: Uri? ->
+        if (!isEditingState) return@rememberLauncherForActivityResult
+
         selectedUri?.let { uri ->
-            Log.d("ImagePicker", "Selected image URI from gallery: $uri")
-            try {
-                // 선택된 이미지를 임시 파일로 복사
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    FileOutputStream(tempProfileImageFile).use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+            val tempUri = friendsRepository.copyUriToInternalStorage(uri, tempProfileImageFile)
+            tempUri?.let {
+                // --- 수정: profileImageUriString으로 copy하고, profileImageUri는 set 프로퍼티 사용 ---
+                tempProfileData = tempProfileData.copy(profileImageUriString = it.toString()).apply {
+                    this.profileImageUri = it // set 프로퍼티 호출
                 }
-                // tempProfileData의 이미지 URI를 임시 파일 URI로 업데이트 (UI 즉시 반영 위함)
-                tempProfileData = tempProfileData.copy(profileImageUri = Uri.fromFile(tempProfileImageFile))
-                Log.d("ImagePicker", "Image copied to temp file: ${tempProfileData.profileImageUri}")
-            } catch (e: Exception) {
-                Log.e("ImagePicker", "Error copying image to temp file", e)
-                // (오류 처리 UI 업데이트 등 - 예: 사용자에게 Toast 메시지 표시)
+                Log.d("ImagePicker", "Image copied to temp file: $it")
+            } ?: Log.e("ImagePicker", "Error copying image to temp file")
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            if (tempProfileImageFile.exists()) {
+                tempProfileImageFile.delete()
+                Log.d("ProfileScreen", "Temp image file deleted on dispose.")
             }
         }
     }
 
     ProfileScreen(
         navController,
-        profileData = if (isEditing) tempProfileData else profileDataState,
-        isEditing = isEditing,
+        profileData = if (isEditingState) tempProfileData else profileDataFromRepo,
+        isMyProfile = isMyProfile,
+        isEditing = isEditingState,
         onEditClick = {
-            // 편집 시작 시, 이전 편집에서 남은 임시 파일이 있다면 삭제
-            if (tempProfileImageFile.exists()) {
-                tempProfileImageFile.delete()
-            }
-            tempProfileData = profileDataState.copy() // 현재 저장된 상태로 편집 시작
-            isEditing = true
+            tempProfileData = profileDataFromRepo.copy()
+            isEditingState = true
         },
         onSaveClick = {
-            var finalDataToSave = tempProfileData.copy() // 저장할 데이터 준비 (복사본으로 작업)
+            if (!isEditingState) return@ProfileScreen
 
-            // 사진이 변경되었는지 확인 (tempProfileData의 URI가 임시 파일 URI를 가리키는지)
+            var dataToPersist = tempProfileData.copy()
+            val targetFileName = "${MAIN_PROFILE_IMAGE_FILENAME_PREFIX}${dataToPersist.id}.jpg"
+            val targetFile = File(context.filesDir, targetFileName)
+
+            // --- 수정: tempProfileData.profileImageUriInternal 대신 tempProfileData.profileImageUri 사용 ---
             if (tempProfileData.profileImageUri == Uri.fromFile(tempProfileImageFile) && tempProfileImageFile.exists()) {
-                try {
-                    // 임시 파일을 메인 프로필 이미지 파일로 복사 (덮어쓰기)
-                    FileInputStream(tempProfileImageFile).use { input ->
-                        FileOutputStream(mainProfileImageFile).use { output ->
-                            input.copyTo(output)
-                        }
+                val finalUri = friendsRepository.copyUriToInternalStorage(Uri.fromFile(tempProfileImageFile), targetFile)
+                if (finalUri != null) {
+                    // --- 수정: profileImageUriString으로 copy하고, profileImageUri는 set 프로퍼티 사용 ---
+                    dataToPersist = dataToPersist.copy(
+                        profileImageUriString = finalUri.toString()
+                    ).apply {
+                        this.profileImageUri = finalUri // set 프로퍼티 호출
                     }
-                    // 저장할 데이터의 이미지 URI를 메인 프로필 이미지 파일 URI로 업데이트
-                    finalDataToSave = finalDataToSave.copy(profileImageUri = Uri.fromFile(mainProfileImageFile))
-                    Log.d("onSaveClick", "Copied temp image to main image: ${finalDataToSave.profileImageUri}")
-                } catch (e: Exception) {
-                    Log.e("onSaveClick", "Error saving image from temp to main", e)
-                    // 이미지 저장 실패 시, 현재 profileDataState의 이미지 URI(이전 이미지)를 유지하도록 설정
-                    finalDataToSave = finalDataToSave.copy(profileImageUri = profileDataState.profileImageUri)
+                    Log.d("ProfileSave", "Image saved to: ${targetFile.absolutePath}")
+                } else {
+                    Log.e("ProfileSave", "Failed to save image. Keeping old image if any.")
+                    // --- 수정: profileImageUriString으로 copy하고, profileImageUri는 set 프로퍼티 사용 ---
+                    dataToPersist = dataToPersist.copy(
+                        profileImageUriString = profileDataFromRepo.profileImageUriString
+                    ).apply {
+                        this.profileImageUri = profileDataFromRepo.profileImageUri // set 프로퍼티 호출
+                    }
                 }
             }
-            // 사진이 변경되지 않았다면, finalDataToSave.profileImageUri는 이미 profileDataState의 URI를 가지고 있거나,
-            // tempProfileData에 있던 (변경되지 않은) main file URI를 가리킴.
 
-            profileDataState = finalDataToSave // 실제 상태 업데이트
-            isEditing = false
-
-            // SharedPreferences에 최종 데이터 저장
-            with(sharedPreferences.edit()) {
-                putString(KEY_NAME, profileDataState.name)
-                putString(KEY_ARRIVAL_TIME_LABEL, profileDataState.messageArrivalTimeLabel)
-                putString(KEY_ARRIVAL_TIME, profileDataState.messageArrivalTime)
-                putString(KEY_STATUS_MESSAGE, profileDataState.statusMessage)
-                // profileImageUri가 null일 수 있으므로 null을 저장하거나, null이 아닐 때만 toString() 호출
-                putString(KEY_IMAGE_URI, profileDataState.profileImageUri?.toString())
-                apply()
+            if (isMyProfile) {
+                friendsRepository.updateMyProfile(dataToPersist)
+            } else {
+                friendsRepository.updateFriend(dataToPersist)
             }
-            Log.d("ProfileScreen", "Profile data saved. Image URI: ${profileDataState.profileImageUri}")
 
-            // 임시 파일 최종 정리
+            isEditingState = false
             if (tempProfileImageFile.exists()) {
                 tempProfileImageFile.delete()
             }
         },
         onCancelClick = {
-            isEditing = false
-            // 편집 취소 시 임시 파일 삭제
+            isEditingState = false
             if (tempProfileImageFile.exists()) {
                 tempProfileImageFile.delete()
-                Log.d("onCancelClick", "Deleted temp image file.")
             }
         },
         onProfileImageChangeClick = {
-            imagePickerLauncher.launch("image/*")
+            // --- 수정 기능: 내 프로필/친구 프로필 모두 이미지 변경 가능 ---
+            if (isEditingState) {
+                imagePickerLauncher.launch("image/*")
+            }
         },
         onProfileDataChange = { updatedData ->
-            if (isEditing) {
+            if (isEditingState) {
                 tempProfileData = updatedData
             }
         }
     )
 }
 
+// ProfileScreen, ProfileCard, formatDisplayTime 함수는 이전과 동일하게 유지합니다.
+// ProfileCard의 OutlinedTextField에서 profileData.copy(...) 호출은
+// messageArrivalTime, name, statusMessage 등 주 생성자 파라미터만 사용하므로
+// 문제가 없습니다. 이미지 로더 부분도 그대로 유지합니다.
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
     profileData: ProfileData,
+    isMyProfile: Boolean,
     isEditing: Boolean,
     onEditClick: () -> Unit,
     onSaveClick: () -> Unit,
@@ -221,45 +212,62 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("프로필", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+                title = { Text(if (isMyProfile) "내 프로필" else profileData.name , fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "뒤로 가기"
+                        )
+                    }
+                },
                 actions = {
                     if (isEditing) {
-                        IconButton(onClick = onSaveClick) { Icon(Icons.Filled.Check, "저장") }
-                        IconButton(onClick = onCancelClick) { Icon(Icons.Filled.Close, "취소") }
+                        IconButton(onClick = onSaveClick) {
+                            Icon(Icons.Filled.Check, contentDescription = "저장")
+                        }
+                        IconButton(onClick = onCancelClick) {
+                            Icon(Icons.Filled.Close, contentDescription = "취소")
+                        }
                     } else {
-                        IconButton(onClick = onEditClick) { Icon(Icons.Filled.Edit, "프로필 수정") }
+                        IconButton(onClick = onEditClick) {
+                            Icon(Icons.Filled.Edit, contentDescription = "프로필 수정")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White,
                     titleContentColor = Color.Black,
+                    navigationIconContentColor = Color.Black,
                     actionIconContentColor = Color.Black
                 )
             )
         },
         containerColor = Color.White
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(Color.White)
-                .verticalScroll(rememberScrollState())
-        ) {
-            HorizontalDivider(
-                color = Color.Black,
-                thickness = 1.dp,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            ProfileCard(
-                navController,
-                profileData = profileData,
-                isEditing = isEditing,
-                onProfileImageChangeClick = onProfileImageChangeClick,
-                onProfileDataChange = onProfileDataChange
-            )
-        }
-        Box{
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                ProfileCard(
+                    profileData = profileData,
+                    isMyProfile = isMyProfile,
+                    isEditing = isEditing,
+                    onProfileImageChangeClick = onProfileImageChangeClick,
+                    onProfileDataChange = onProfileDataChange,
+                    onSendFeedbackClick = {
+                        if (!isMyProfile && profileData.id != null && profileData.id != "me") {
+                            navController.navigate("feedback/${profileData.id}")
+                        }
+                    }
+                )
+                // Add bottom padding to ensure FAB doesn't overlap excessively
+                Spacer(modifier = Modifier.height(80.dp))
+            }
+
             ExpandableFabExample(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -273,11 +281,12 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileCard(
-    navController: NavController,
     profileData: ProfileData,
+    isMyProfile: Boolean,
     isEditing: Boolean,
     onProfileImageChangeClick: () -> Unit,
-    onProfileDataChange: (ProfileData) -> Unit
+    onProfileDataChange: (ProfileData) -> Unit,
+    onSendFeedbackClick: () -> Unit
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
@@ -293,7 +302,8 @@ fun ProfileCard(
         is24Hour = true
     )
 
-    if (showTimePicker) {
+    // 시간 선택 다이얼로그
+    if (showTimePicker && isEditing) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
             title = { Text("시간 선택") },
@@ -326,18 +336,19 @@ fun ProfileCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 100.dp),
+                .padding(top = 100.dp), // 이미지 오버랩을 위한 패딩
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE0EFFF))
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE0EFFF)) // 연한 파란색 배경
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 160.dp, bottom = 30.dp, start = 20.dp, end = 20.dp),
+                    // --- MODIFICATION: Increased top padding for more space ---
+                    .padding(top = 160.dp, bottom = 20.dp, start = 20.dp, end = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (isEditing) {
-                    // 1. 이름
+                    // --- 편집 모드 ---
                     OutlinedTextField(
                         value = profileData.name,
                         onValueChange = { onProfileDataChange(profileData.copy(name = it)) },
@@ -347,33 +358,32 @@ fun ProfileCard(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    // 2. 메시지 도착 시간 (이름 아래)
-                    OutlinedTextField(
-                        value = profileData.messageArrivalTime,
-                        onValueChange = { /* 직접 수정 방지 */ },
-                        label = { Text(profileData.messageArrivalTimeLabel) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                focusManager.clearFocus()
-                                showTimePicker = true
-                            },
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.clock),
-                                contentDescription = "시간 선택",
-                                modifier = Modifier.clickable {
+                    if (isMyProfile){
+                        OutlinedTextField(
+                            value = formatDisplayTime(profileData.messageArrivalTime),
+                            onValueChange = { /* Do nothing, read-only */ },
+                            label = { Text(profileData.messageArrivalTimeLabel) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
                                     focusManager.clearFocus()
                                     showTimePicker = true
-                                }
-                            )
-                        }
-                    )
+                                },
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.clock), // 시계 아이콘 (리소스 필요)
+                                    contentDescription = "시간 선택",
+                                    modifier = Modifier.clickable {
+                                        focusManager.clearFocus()
+                                        showTimePicker = true
+                                    }
+                                )
+                            }
+                        )
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 3. 상태 메시지 (메시지 도착 시간 아래)
                     OutlinedTextField(
                         value = profileData.statusMessage,
                         onValueChange = { onProfileDataChange(profileData.copy(statusMessage = it)) },
@@ -383,47 +393,58 @@ fun ProfileCard(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
                     )
-                } else { // 보기 모드
-                    // 1. 이름
+
+                } else {
+                    // --- 보기 모드 (이미지 디자인 + 상태 메시지 반영) ---
                     Text(profileData.name, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // 2. 메시지 도착 시간 (이름 아래)
                     Text(profileData.messageArrivalTimeLabel, fontSize = 14.sp, color = Color.Gray)
-                    val displayTime = formatDisplayTime(profileData.messageArrivalTime)
-                    Text(displayTime, fontSize = 14.sp, color = Color.Gray)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(formatDisplayTime(profileData.messageArrivalTime), fontSize = 14.sp, color = Color.Gray)
 
-                    // 3. 상태 메시지 (메시지 도착 시간 아래)
+                    // --- MODIFICATION: Added Status Message back ---
                     Text(profileData.statusMessage, fontSize = 16.sp, color = Color.DarkGray)
+                    Spacer(modifier = Modifier.height(16.dp)) // 상태 메시지와 시간 사이 간격
                 }
-                Spacer(modifier = Modifier.height(if (isEditing) 30.dp else 250.dp))
-                if (!isEditing) {
+
+                // --- Spacer ---
+                val spacerHeight = if (isEditing) 30.dp
+                else  250.dp
+
+                Spacer(modifier = Modifier.height(spacerHeight))
+
+                // --- 피드백 보내기 버튼 ---
+                if (!isMyProfile && !isEditing) {
                     Button(
-                        onClick = {navController.navigate("sending") },
+                        onClick = onSendFeedbackClick,
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDCDCDC)),
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 30.dp)
                     ) {
                         Text("피드백 보내기", color = Color.Black)
                     }
                 }
             }
         }
+
+        // --- 프로필 이미지 ---
         Box(
             modifier = Modifier
                 .size(250.dp)
                 .align(Alignment.TopCenter)
                 .clip(CircleShape)
                 .background(Color.LightGray)
-                .clickable(enabled = isEditing) { onProfileImageChangeClick() }
+                .clickable(enabled = isEditing) {
+                    if (isEditing) onProfileImageChangeClick()
+                }
         ) {
             Image(
                 painter = if (profileData.profileImageUri != null) {
                     rememberAsyncImagePainter(
-                        model = ImageRequest.Builder(context)
+                        model = ImageRequest.Builder(LocalContext.current)
                             .data(profileData.profileImageUri)
-                            // ObjectKey 대신 memoryCacheKey를 동적으로 변경하여 새로고침 유도
                             .memoryCacheKey(profileData.profileImageUri.toString() + "#" + System.currentTimeMillis())
                             .memoryCachePolicy(CachePolicy.DISABLED)
                             .diskCachePolicy(CachePolicy.DISABLED)
@@ -438,17 +459,25 @@ fun ProfileCard(
             )
             if (isEditing) {
                 Box(
-                    modifier = Modifier.matchParentSize().background(Color.Black.copy(alpha = 0.3f))
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = 0.3f))
                         .clickable { onProfileImageChangeClick() },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("변경", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "변경",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
     }
 }
 
+// formatDisplayTime 함수는 그대로 유지합니다.
 fun formatDisplayTime(timeString: String): String {
     return try {
         val parts = timeString.split(" : ")
@@ -466,13 +495,4 @@ fun formatDisplayTime(timeString: String): String {
             String.format("%s %d:%02d", amPm, displayHour, minute)
         } else { timeString }
     } catch (e: Exception) { timeString }
-}
-
-@Preview(showBackground = true, name = "Default Preview")
-@Composable
-fun DefaultPreview() {
-    SendBackSendBagTheme {
-        val navController = rememberNavController()
-        ProfileScreenContainer(navController, "user123")
-    }
 }

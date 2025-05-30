@@ -4,85 +4,89 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn // 댓글 목록을 위해 추가
-import androidx.compose.foundation.lazy.items // 댓글 목록을 위해 추가
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.AccountCircle // 프로필 아이콘 예시
-import androidx.compose.material.icons.filled.Close // 닫기 아이콘 예시
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send // 보내기 아이콘 예시
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController // 키보드 컨트롤러
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp // ModalBottomSheetState를 위해 추가
-import androidx.compose.material3.rememberModalBottomSheetState // rememberModalBottomSheetState를 위해 추가
-import androidx.compose.material3.ExperimentalMaterial3Api // OptIn 어노테이션에 필요
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState // <<--- 이 타입을 사용해야 합니다.
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.lifecycle.viewmodel.compose.viewModel // ViewModel 의존성 추가
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
-import kotlinx.coroutines.launch // 코루틴 스코프
+import kotlinx.coroutines.launch
 
-// --- 기존 코드 시작 (SendBackSendBagTheme 사용 및 HorizontalDivider 변경) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollScreen(navController: NavController) {
-    // SendBackSendBagTheme { // 앱의 실제 테마 사용
-    Box{
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { /* 현재 화면에서는 제목이 TopAppBar에 없음 */ },
-                navigationIcon = {
-                    IconButton(onClick = { /* 뒤로가기 동작 */ }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로가기"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* 검색 동작 */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "검색"
-                        )
-                    }
-                    IconButton(onClick = { /* 북마크 동작 */ }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.bookmark), // 북마크 아이콘
-                            contentDescription = "북마크"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
+fun PollScreen(name:String,navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
+    val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    Box {
+        Scaffold(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFD6E9FA)),
+            topBar = {
+                TopAppBar(
+                    title = { /* 현재 화면에서는 제목이 TopAppBar에 없음 */ },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "뒤로가기"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* 검색 동작 */ }) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "검색"
+                            )
+                        }
+                        IconButton(onClick = { /* 북마크 동작 */ }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.bookmark),
+                                contentDescription = "북마크"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFFD6E9FA),
+                        navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
+                        actionIconContentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        PollContent(Modifier.padding(innerPadding))
-    }
+            },
+            containerColor = Color(0xFFD6E9FA)
+        ) { innerPadding ->
+            PollContent(name,Modifier.padding(innerPadding), viewModel)// ViewModel 전달
+        }
         ExpandableFabExample(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -90,13 +94,26 @@ fun PollScreen(navController: NavController) {
             navController = navController
         )
     }
-    // }
+    if (showBottomSheet) {
+        CommentBottomSheet(
+            sheetState = sheetState,
+            viewModel = viewModel, // ViewModel 전달
+            onDismiss = {
+                scope.launch {
+                    sheetState.hide()
+                }.invokeOnCompletion {
+                    if (!sheetState.isVisible) {
+                        showBottomSheet = false
+                    }
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollContent(modifier: Modifier = Modifier) {
-    // sheetState의 타입을 명시적으로 SheetState로 지정하거나, 추론하도록 둡니다.
+fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingViewModel) { // ViewModel 받기
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -106,29 +123,35 @@ fun PollContent(modifier: Modifier = Modifier) {
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "오늘의 투표",
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Surface(
-            shape = RoundedCornerShape(50),
-            color = Color(0xFFE0E0E0).copy(alpha = 0.7f),
-            modifier = Modifier
-                .wrapContentWidth()
-                .padding(bottom = 24.dp)
-        ) {
+        Row {
+            Spacer(modifier = Modifier.padding(20.dp))
             Text(
-                text = "박지열님이 게시한 투표",
-                fontSize = 14.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                text = "오늘의 투표",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
         }
+        Row {
+            Spacer(modifier = Modifier.padding(10.dp))
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = Color(0xFFE0E0E0).copy(alpha = 0.7f),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .padding(bottom = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.padding(10.dp))
+                Text(
+                    text = name+"님이 게시한 투표",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+        }
 
-        FeedbackCard(
-            onChatIconClick = { // FeedbackCard에서 채팅 아이콘 클릭 시 호출될 콜백
+        FeedbackCard(name,
+            onChatIconClick = {
                 scope.launch {
                     showBottomSheet = true
                 }
@@ -137,45 +160,42 @@ fun PollContent(modifier: Modifier = Modifier) {
     }
 
     if (showBottomSheet) {
-        CommentBottomSheet(
+        CommentBottomSheet( // ViewModel 전달
             sheetState = sheetState,
+            viewModel = viewModel,
             onDismiss = {
                 scope.launch {
-                    sheetState.hide() // suspend 함수 호출
-                }.invokeOnCompletion { // hide() 코루틴 완료 후 실행
+                    sheetState.hide()
+                }.invokeOnCompletion {
                     if (!sheetState.isVisible) {
                         showBottomSheet = false
                     }
                 }
-                // 또는 더 간단하게, hide()가 상태를 즉시 반영한다고 가정할 수 있다면:
-                // scope.launch {
-                //     sheetState.hide()
-                //     if (!sheetState.isVisible) {
-                //         showBottomSheet = false
-                //     }
-                // }
             }
         )
     }
 }
 
 @Composable
-fun FeedbackCard(onChatIconClick: () -> Unit) {
-    var selectedOption by remember { mutableStateOf<PollOption?>(null) } // <<--- 초기값을 null로 변경
+fun FeedbackCard(name:String,
+    onChatIconClick: () -> Unit) {
+    var selectedOption by remember { mutableStateOf<PollOption?>(null) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFFFFF)
+        )
     ) {
         Column(
             modifier = Modifier
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             Text(
-                text = "박지열님이 받은 피드백",
+                text = name+"님이 받은 피드백",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -193,7 +213,6 @@ fun FeedbackCard(onChatIconClick: () -> Unit) {
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // PollOptions에 nullable selectedOption을 그대로 전달
             PollOptions(
                 selectedOption = selectedOption,
                 onOptionSelected = { option -> selectedOption = option }
@@ -226,38 +245,29 @@ fun FeedbackCard(onChatIconClick: () -> Unit) {
     }
 }
 
-// --- 기존 코드 끝 ---
 
-// --- 새로운 코드: 댓글 BottomSheet ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentBottomSheet(
     sheetState: SheetState,
+    viewModel: VotingViewModel, // ViewModel 받기
     onDismiss: () -> Unit
 ) {
     var commentInput by remember { mutableStateOf("") }
-    val keyboardController = LocalSoftwareKeyboardController.current // 키보드 컨트롤러
-    // 실제 댓글 데이터 (예시)
-    val comments = remember {
-        mutableStateListOf(
-            CommentData("춤추는 고양이", "가끔씩 그런 점이 있는듯"),
-            CommentData("배고픈 수달", "인정"),
-            CommentData("코딩하는 말", "난 아닌거 같던데")
-        )
-    }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val comments by viewModel.comments.collectAsState() // ViewModel에서 댓글 목록 가져오기
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        modifier = Modifier.fillMaxHeight(0.9f), // 화면 높이의 90%까지 차지하도록 설정
-        dragHandle = { BottomSheetDefaults.DragHandle() } // 상단 드래그 핸들 추가
+        modifier = Modifier.fillMaxHeight(0.9f),
+        dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            // 1. 상단 영역 (제목, 닫기 버튼)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -276,18 +286,16 @@ fun CommentBottomSheet(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // 2. 댓글 목록 (LazyColumn 사용)
             LazyColumn(
-                modifier = Modifier.weight(1f) // 남은 공간을 모두 차지하도록
+                modifier = Modifier.weight(1f)
             ) {
-                items(comments) { comment ->
+                items(comments, key = { it.author + it.text}) { comment -> // key 추가 (선택 사항)
                     CommentItem(comment)
                 }
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // 3. 댓글 입력 필드
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -297,10 +305,10 @@ fun CommentBottomSheet(
                 OutlinedTextField(
                     value = commentInput,
                     onValueChange = { commentInput = it },
-                    placeholder = { Text("댓글 입력...") },
+                    placeholder = { Text("댓글 입력...") }, // 플레이스홀더 텍스트 변경
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(24.dp), // 둥근 모서리
-                    leadingIcon = { // 사용자 프로필 아이콘 (선택 사항)
+                    shape = RoundedCornerShape(24.dp),
+                    leadingIcon = {
                         Icon(
                             Icons.Filled.AccountCircle,
                             contentDescription = "User Profile",
@@ -312,13 +320,12 @@ fun CommentBottomSheet(
                 IconButton(
                     onClick = {
                         if (commentInput.isNotBlank()) {
-                            // 새 댓글 추가 (실제 앱에서는 ViewModel 등을 통해 처리)
-                            comments.add(0, CommentData("나", commentInput)) // 맨 위에 추가
-                            commentInput = "" // 입력 필드 초기화
-                            keyboardController?.hide() // 키보드 숨기기
+                            viewModel.addComment(commentInput) // ViewModel 함수 호출
+                            commentInput = ""
+                            keyboardController?.hide()
                         }
                     },
-                    enabled = commentInput.isNotBlank() // 입력 내용이 있을 때만 활성화
+                    enabled = commentInput.isNotBlank()
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.Send,
@@ -327,17 +334,14 @@ fun CommentBottomSheet(
                     )
                 }
             }
-            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars)) // 네비게이션 바 높이만큼 간격 추가
-            Spacer(modifier = Modifier.height(16.dp)) // 추가적인 하단 여백
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
-// 댓글 데이터 클래스
-data class CommentData(val author: String, val text: String)
-
 @Composable
-fun CommentItem(comment: CommentData) {
+fun CommentItem(comment: CommentData) { // CommentData 받도록 수정
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -355,19 +359,27 @@ fun CommentItem(comment: CommentData) {
         Column {
             Text(comment.author, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(comment.text, fontSize = 14.sp, lineHeight = 18.sp)
+            // 로딩 상태에 따라 UI 분기 처리
+            if (comment.isLoading) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(comment.text, fontSize = 14.sp, lineHeight = 18.sp, color = Color.Gray)
+                }
+            } else {
+                Text(comment.text, fontSize = 14.sp, lineHeight = 18.sp)
+            }
         }
     }
 }
 
-// --- 나머지 코드 (PollOption, PollOptions, OptionItem)는 이전과 동일 ---
 enum class PollOption {
     YES, NO
 }
 
 @Composable
 fun PollOptions(
-    selectedOption: PollOption?, // PollOption? (nullable) 타입을 사용합니다.
+    selectedOption: PollOption?,
     onOptionSelected: (PollOption) -> Unit
 ) {
     Row(
@@ -377,15 +389,15 @@ fun PollOptions(
     ) {
         OptionItem(
             text = "그렇다",
-            optionType = PollOption.YES, // 현재 아이템의 타입
-            globallySelectedOption = selectedOption, // 전체 선택 상태 전달
+            optionType = PollOption.YES,
+            globallySelectedOption = selectedOption,
             onClick = { onOptionSelected(PollOption.YES) }
         )
 
         OptionItem(
             text = "아니다",
-            optionType = PollOption.NO, // 현재 아이템의 타입
-            globallySelectedOption = selectedOption, // 전체 선택 상태 전달
+            optionType = PollOption.NO,
+            globallySelectedOption = selectedOption,
             onClick = { onOptionSelected(PollOption.NO) }
         )
     }
@@ -394,13 +406,12 @@ fun PollOptions(
 @Composable
 fun OptionItem(
     text: String,
-    optionType: PollOption, // 이 아이템이 O인지 X인지
-    globallySelectedOption: PollOption?, // 현재 전역적으로 선택된 옵션 (null일 수 있음)
+    optionType: PollOption,
+    globallySelectedOption: PollOption?,
     onClick: () -> Unit
 ) {
-    val baseColor = if (optionType == PollOption.YES) Color(0xFF007AFF) else Color(0xFFFF3B30) // O 파랑, X 빨강
+    val baseColor = if (optionType == PollOption.YES) Color(0xFF007AFF) else Color(0xFFFF3B30)
 
-    // 상태에 따른 색상 및 스타일 결정
     val iconDisplayColor: Color
     val labelDisplayColor: Color
     val borderDisplayColor: Color
@@ -408,25 +419,21 @@ fun OptionItem(
     val circleBackground: Color
 
     if (globallySelectedOption == null) {
-        // 초기 상태: 아무것도 선택되지 않았을 때 (둘 다 활성 상태로 보임)
         iconDisplayColor = baseColor
-        labelDisplayColor = baseColor // 라벨도 기본 색상 사용
+        labelDisplayColor = baseColor
         borderDisplayColor = baseColor
-        fontWeightForLabel = FontWeight.Bold // 초기에도 강조
+        fontWeightForLabel = FontWeight.Bold
         circleBackground = Color.Transparent
     } else {
-        // 무언가 선택된 상태
         if (globallySelectedOption == optionType) {
-            // 이 아이템이 선택된 경우
             iconDisplayColor = baseColor
             labelDisplayColor = baseColor
             borderDisplayColor = baseColor
             fontWeightForLabel = FontWeight.Bold
-            circleBackground = baseColor.copy(alpha = 0.1f) // 선택된 아이템 배경 강조
+            circleBackground = baseColor.copy(alpha = 0.1f)
         } else {
-            // 이 아이템이 선택되지 않은 경우 (흐리게 처리)
             iconDisplayColor = Color.LightGray
-            labelDisplayColor = Color.Gray // 텍스트는 LightGray보다 조금 더 진한 Gray 사용
+            labelDisplayColor = Color.Gray
             borderDisplayColor = Color.LightGray
             fontWeightForLabel = FontWeight.Normal
             circleBackground = Color.Transparent
@@ -441,10 +448,10 @@ fun OptionItem(
             modifier = Modifier
                 .size(64.dp)
                 .clip(CircleShape)
-                .background(circleBackground) // 결정된 배경색 적용
+                .background(circleBackground)
                 .border(
                     width = 2.dp,
-                    color = borderDisplayColor, // 결정된 테두리색 적용
+                    color = borderDisplayColor,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -452,30 +459,18 @@ fun OptionItem(
             Text(
                 text = if (optionType == PollOption.YES) "O" else "X",
                 fontSize = 32.sp,
-                fontWeight = FontWeight.Bold, // O, X 아이콘 자체는 항상 굵게
-                color = iconDisplayColor, // 결정된 아이콘 색상 적용
+                fontWeight = FontWeight.Bold,
+                color = iconDisplayColor,
                 textAlign = TextAlign.Center
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = text,
-            color = labelDisplayColor, // 결정된 라벨 색상 적용
+            color = labelDisplayColor,
             fontSize = 14.sp,
-            fontWeight = fontWeightForLabel // 결정된 폰트 굵기 적용
+            fontWeight = fontWeightForLabel
         )
     }
 }
 
-// PollOption enum class는 동일하게 유지됩니다.
-// enum class PollOption { YES, NO }
-
-
-@Preview(showBackground = true, backgroundColor = 0xFFE7F0FE)
-@Composable
-fun PollScreenPreview() {
-    val navController = rememberNavController()
-    SendBackSendBagTheme { // 앱의 실제 테마 사용
-        PollScreen(navController)
-    }
-}

@@ -64,7 +64,7 @@ fun SendScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
-                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black) },
+                title = { Text(text = "보낸 메시지", fontWeight = FontWeight.Black, fontSize = 30.sp) },
                 actions = {
                     IconButton(onClick = {navController.navigate("settings")}) {
                         Icon(
@@ -90,10 +90,15 @@ fun SendScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
             LazyColumn {
-                items(messages) { msg ->
-                    MessageItem(msg = msg, onClick = {
-                        navController.navigate("sended")
-                    })
+                items(messages.filter {
+                    it.name.contains(searchQuery, true)
+                }) { msg ->
+                    MessageItem(
+                        msg = msg,
+                        onClick = {
+                            navController.navigate("sended")
+                        }
+                    )
                 }
             }
         }
