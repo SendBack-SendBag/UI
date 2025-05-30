@@ -99,8 +99,6 @@ fun PollListScreen(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            BlackHorizontalLine()
-            Spacer(modifier = Modifier.height(16.dp))
             // 전체 투표 목록
             Text(
                 text = "전체 투표",
@@ -114,7 +112,8 @@ fun PollListScreen(
                             .fillMaxWidth()
                             .clickable { navController.navigate("poll/${poll.id}") },
                         shape = RoundedCornerShape(12.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFD6E9FA))
                     ) {
                         Column(
                             modifier = Modifier
