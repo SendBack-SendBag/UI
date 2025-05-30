@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect // Flow 수집을 위해 추가
 import java.lang.StringBuilder // StringBuilder 사용을 위해 추가
 
+
 @Composable
 fun SendBack(
     input: String
@@ -18,7 +19,32 @@ fun SendBack(
     val model = Firebase.ai(backend = GenerativeBackend.googleAI())
         .generativeModel("gemini-2.5-pro") // 모델 이름 확인 (기존 코드 유지)
 
-    val prompt = "$input"
+    val prompt = """You will be provided with feedback text:
+{
+feedback_text
+}
+
+Follow these steps to transform the feedback:
+
+1.  **Anonymize:** Remove or change any information that could reveal the author's identity (e.g., specific names, locations, or events only the author would know).
+2.  **Soften Language:**
+    *   Replace any 모욕적인 표현 (insulting expressions) or 욕설 (swear words) with neutral or positive alternatives.
+    *   Rephrase any 상처줄 수 있는 표현 (potentially hurtful statements) to be more 부드럽게 (gentle) and 건설적 (constructive).
+3.  **Preserve Message:** Ensure the 요점 (key points) of the feedback are accurately 전달 (conveyed) in the transformed text. The meaning of the feedback should remain the same.
+4.  **Language:** Use 한국어 (Korean) as the primary language. If necessary for clarity, you may use other languages.
+5.  **Output:** Return only the transformed feedback text.
+
+Example:
+
+Input:
+"야, 김XX 너 진짜 일 못한다. 그따위로 할거면 그냥 나가. 완전 짜증나!"
+
+Output:
+"업무에 대한 피드백입니다. 김XX님의 업무 방식에 개선이 필요한 부분이 있습니다. 함께 협력하여 더 나은 결과를 만들 수 있도록 노력하면 좋겠습니다.
+
+input = $input
+"""
+
     val response = model.generateContentStream(prompt)
 
     return response
@@ -31,7 +57,31 @@ fun Comment(
     val model = Firebase.ai(backend = GenerativeBackend.googleAI())
         .generativeModel("gemini-2.5-pro") // 모델 이름 확인 (기존 코드 유지)
 
-    val prompt = "$input"
+    val prompt = """You will be provided with feedback text:
+        {
+        feedback_text
+        }
+        
+        Follow these steps to transform the feedback:
+        
+        1.  **Anonymize:** Remove or change any information that could reveal the author's identity (e.g., specific names, locations, or events only the author would know).
+        2.  **Soften Language:**
+            *   Replace any 모욕적인 표현 (insulting expressions) or 욕설 (swear words) with neutral or positive alternatives.
+            *   Rephrase any 상처줄 수 있는 표현 (potentially hurtful statements) to be more 부드럽게 (gentle) and 건설적 (constructive).
+        3.  **Preserve Message:** Ensure the 요점 (key points) of the feedback are accurately 전달 (conveyed) in the transformed text. The meaning of the feedback should remain the same.
+        4.  **Language:** Use 한국어 (Korean) as the primary language. If necessary for clarity, you may use other languages.
+        5.  **Output:** Return only the transformed feedback text.
+        
+        Example:
+        
+        Input:
+        "야, 김XX 너 진짜 일 못한다. 그따위로 할거면 그냥 나가. 완전 짜증나!"
+        
+        Output:
+        "업무에 대한 피드백입니다. 김XX님의 업무 방식에 개선이 필요한 부분이 있습니다. 함께 협력하여 더 나은 결과를 만들 수 있도록 노력하면 좋겠습니다.
+        
+        input = $input
+        """
     val response = model.generateContentStream(prompt)
 
     return response
