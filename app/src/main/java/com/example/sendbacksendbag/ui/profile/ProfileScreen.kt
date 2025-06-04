@@ -1,6 +1,5 @@
 package com.example.sendbacksendbag.ui.profile
 
-import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,13 +33,11 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import com.example.sendbacksendbag.ExpandableFabExample
+import com.example.sendbacksendbag.ui.messages.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.data.FriendsRepository
 import kotlinx.coroutines.flow.map
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.*
 
 // SharedPreferences Keys
@@ -260,7 +257,8 @@ fun ProfileScreen(
                     onProfileDataChange = onProfileDataChange,
                     onSendFeedbackClick = {
                         if (!isMyProfile && profileData.id != null && profileData.id != "me") {
-                            navController.navigate("sending/${profileData.name}")
+                            // 전송 시간을 포함하여 sending 화면으로 이동
+                            navController.navigate("sending/${profileData.name}?sendingTime=${profileData.messageArrivalTime}")
                         }
                     }
                 )
@@ -416,7 +414,7 @@ fun ProfileCard(
                 // --- 피드백 보내기 버튼 ---
                 if (!isMyProfile && !isEditing) {
                     Button(
-                        onClick = onSendFeedbackClick,
+                        onClick = { val sendingTime = profileData.messageArrivalTime; onSendFeedbackClick() },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDCDCDC)),
                         modifier = Modifier
