@@ -1,3 +1,5 @@
+package com.example.sendbacksendbag
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -46,7 +48,7 @@ import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.PollScreen
 
 // 메시지 데이터 모델
-data class Message(
+data class Message2(
     val name: String,
     val avatarRes: Int,
     val content: String,
@@ -56,7 +58,7 @@ data class Message(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendScreen(
-    messages: List<Message>,
+    messages: List<Message2>,
     navController: NavController
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -113,7 +115,7 @@ fun SendScreen(
 
 @Composable
 private fun MessageItem(
-    msg: Message,
+    msg: Message2,
     onClick: () -> Unit
 ) {
     Row(
@@ -164,9 +166,9 @@ private fun MiniFab(
 @Composable
 fun Send(navController: NavController) {
     val sampleList = listOf(
-        Message("박지열", R.drawable.example , "20시에 전송될 예정입니다.", "오후 1:33"),
-        Message("이승주", R.drawable.example, "18시에 전송될 예정입니다.", "오후 3:34"),
-        Message("나이병", R.drawable.example ,"23시에 전송될 예정입니다.", "오후 5:21")
+        Message2("박지열", R.drawable.example , "20시에 전송될 예정입니다.", "오후 1:33"),
+        Message2("이승주", R.drawable.example, "18시에 전송될 예정입니다.", "오후 3:34"),
+        Message2("나이병", R.drawable.example ,"23시에 전송될 예정입니다.", "오후 5:21")
     )
     SendScreen(messages = sampleList, navController)
 }

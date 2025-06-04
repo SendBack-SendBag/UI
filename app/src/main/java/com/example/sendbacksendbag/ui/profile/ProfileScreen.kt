@@ -1,8 +1,10 @@
 package com.example.sendbacksendbag.ui.profile
 
+// import coil3.key.ObjectKey // 사용하지 않음
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
@@ -28,9 +30,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -187,6 +191,11 @@ fun ProfileScreenContainer(
             if (isEditingState) {
                 tempProfileData = updatedData
             }
+        },
+        onSendFeedbackClick = {
+            if (!isMyProfile && profileDataFromRepo.id != null && profileDataFromRepo.id != "me") {
+                navController.navigate("feedback/${profileDataFromRepo.id}")
+            }
         }
     )
 }
@@ -207,7 +216,8 @@ fun ProfileScreen(
     onSaveClick: () -> Unit,
     onCancelClick: () -> Unit,
     onProfileImageChangeClick: () -> Unit,
-    onProfileDataChange: (ProfileData) -> Unit
+    onProfileDataChange: (ProfileData) -> Unit,
+    onSendFeedbackClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -264,10 +274,65 @@ fun ProfileScreen(
                         }
                     }
                 )
+
                 // Add bottom padding to ensure FAB doesn't overlap excessively
                 Spacer(modifier = Modifier.height(80.dp))
             }
 
+            ExpandableFabExample(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                navController = navController
+            )
+        }
+        Box {
+            Scaffold(
+                topBar = {
+                    androidx.compose.material3.TopAppBar(
+                        title = {
+                            androidx.compose.material3.Text(
+                                text = "프로필",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 25.sp
+                            )
+                        },
+                        navigationIcon = {
+                            androidx.compose.material3.IconButton(onClick = {
+                                navController.popBackStack()
+                            }) {
+                                androidx.compose.material.Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        }
+                    )
+                },
+                containerColor = Color.White
+            ) { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .background(Color.White)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    HorizontalDivider(
+                        color = Color.Black,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    ProfileCard(
+                        profileData = profileData,
+                        isEditing = isEditing,
+                        onProfileImageChangeClick = onProfileImageChangeClick,
+                        onProfileDataChange = onProfileDataChange,
+                        onSendFeedbackClick = onSendFeedbackClick,
+                        isMyProfile = isMyProfile
+                    )
+                }
+            }
             ExpandableFabExample(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -384,6 +449,7 @@ fun ProfileCard(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // 3. 상태 메시지 (메시지 도착 시간 아래)
                     OutlinedTextField(
                         value = profileData.statusMessage,
                         onValueChange = { onProfileDataChange(profileData.copy(statusMessage = it)) },
@@ -399,6 +465,7 @@ fun ProfileCard(
                     Text(profileData.name, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // 2. 메시지 도착 시간 (이름 아래)
                     Text(profileData.messageArrivalTimeLabel, fontSize = 14.sp, color = Color.Gray)
                     Text(formatDisplayTime(profileData.messageArrivalTime), fontSize = 14.sp, color = Color.Gray)
 
