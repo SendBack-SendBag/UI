@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext // LocalContext 임포트 추가
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,7 +24,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
-import com.example.sendbacksendbag.data.FriendsRepository // FriendsRepository 임포트 추가
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import kotlinx.coroutines.launch
 
@@ -293,6 +291,16 @@ fun PollResultBar(yesPercentage: Int, noPercentage: Int) {
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun MyPollScreenPreview() {
+    SendBackSendBagTheme {
+        // 미리보기에서는 NavController가 필요하므로 임시로 생성
+        val navController = rememberNavController()
+        MyPollScreen(navController, viewModel = viewModel()) // ViewModel은 실제로는 Factory를 통해 생성해야 합니다.
     }
 }
 

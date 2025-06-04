@@ -7,9 +7,6 @@ import SettingsScreen // 실제 Composable import 필요
 import android.content.Context
 import android.util.Log
 import HomeScreen
-import Send
-import Sended
-import Sending
 import SettingsScreen
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
@@ -42,7 +39,7 @@ fun AppNavGraph(
     val votingViewModel: VotingViewModel = viewModel(
         factory = VotingViewModelFactory(friendsRepository)
     )
-
+    val messageViewModel = viewModel<MessageViewModel>() // MessageViewModel을 ViewModel로 사용
     val feedbackViewModel = viewModel<FeedbackViewModel>()
 
 
@@ -79,14 +76,37 @@ fun AppNavGraph(
             )
         }
         composable("send") {
-            Send(navController) // 실제 Send Composable 사용
+            SendScreen(navController = navController, messageViewModel = messageViewModel)
         }
-        composable("sending/{receiverName}") { backStackEntry ->
+        composable(
+            route = "sending/{receiverName}?sendingTime={sendingTime}",
+            arguments = listOf(
+                navArgument("receiverName") { type = NavType.StringType },
+                navArgument("sendingTime") {
+                    type = NavType.StringType
+                    defaultValue = "20:00"
+                }
+            )
+        ) { backStackEntry ->
             val receiverName = backStackEntry.arguments?.getString("receiverName") ?: "Unknown"
-            Sending(receiverName, "니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;", navController) // 실제 Sending Composable 사용
+            val sendingTime = backStackEntry.arguments?.getString("sendingTime") ?: "20:00"
+
+            Sending(
+                userName = receiverName,
+                message = "니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;",
+                navController = navController
+            )
         }
-        composable("sended") {
-            Sended(navController) // 실제 Sended Composable 사용
+        composable(
+            route = "sended/{messageId}",
+            arguments = listOf(navArgument("messageId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val messageId = backStackEntry.arguments?.getString("messageId") ?: ""
+            Sended(
+                navHostController = navController,
+                messageId = messageId,
+                messageViewModel = messageViewModel
+            )
         }
         composable(
             route = "profile/{userId}",

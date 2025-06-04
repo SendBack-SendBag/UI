@@ -1,6 +1,5 @@
 package com.example.sendbacksendbag.ui.profile
 
-// import coil3.key.ObjectKey // 사용하지 않음
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -43,8 +42,6 @@ import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.data.FriendsRepository
 import kotlinx.coroutines.flow.map
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.*
 
 // SharedPreferences Keys
@@ -270,7 +267,8 @@ fun ProfileScreen(
                     onProfileDataChange = onProfileDataChange,
                     onSendFeedbackClick = {
                         if (!isMyProfile && profileData.id != null && profileData.id != "me") {
-                            navController.navigate("sending/${profileData.name}")
+                            // 전송 시간을 포함하여 sending 화면으로 이동
+                            navController.navigate("sending/${profileData.name}?sendingTime=${profileData.messageArrivalTime}")
                         }
                     }
                 )
@@ -483,7 +481,7 @@ fun ProfileCard(
                 // --- 피드백 보내기 버튼 ---
                 if (!isMyProfile && !isEditing) {
                     Button(
-                        onClick = onSendFeedbackClick,
+                        onClick = { val sendingTime = profileData.messageArrivalTime; onSendFeedbackClick() },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDCDCDC)),
                         modifier = Modifier
