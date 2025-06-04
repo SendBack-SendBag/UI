@@ -260,7 +260,7 @@ fun ProfileScreen(
                     onProfileDataChange = onProfileDataChange,
                     onSendFeedbackClick = {
                         if (!isMyProfile && profileData.id != null && profileData.id != "me") {
-                            navController.navigate("feedback/${profileData.id}")
+                            navController.navigate("sending/${profileData.name}")
                         }
                     }
                 )

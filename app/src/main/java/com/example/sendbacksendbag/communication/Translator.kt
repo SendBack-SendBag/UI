@@ -20,9 +20,7 @@ fun SendBack(
         .generativeModel("gemini-2.5-pro") // 모델 이름 확인 (기존 코드 유지)
 
     val prompt = """You will be provided with feedback text:
-{
-feedback_text
-}
+{$input}
 
 Follow these steps to transform the feedback:
 
@@ -41,8 +39,6 @@ Input:
 
 Output:
 "업무에 대한 피드백입니다. 김XX님의 업무 방식에 개선이 필요한 부분이 있습니다. 함께 협력하여 더 나은 결과를 만들 수 있도록 노력하면 좋겠습니다.
-
-input = $input
 """
 
     val response = model.generateContentStream(prompt)
