@@ -1,5 +1,7 @@
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -90,18 +93,25 @@ fun Sending(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Button(
-                onClick = onSend,
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, Color.Gray),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFD6E9FA)
+            TextButton(
+                onClick = {
+                    navController.navigate("send")
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = Color(0xFF5EA7FF)
                 ),
-                modifier = Modifier.size(63.dp, 36.dp)
-            ){
-                Text(
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = Color.LightGray,
+                    shape = RoundedCornerShape(8.dp)
+                )
+            ) {
+                Spacer(modifier = Modifier.width(4.dp))
+                androidx.compose.material.Text(
                     text = "send",
-                    color = Color.Black,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center
                 )
             }
         }

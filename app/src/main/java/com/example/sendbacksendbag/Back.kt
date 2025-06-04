@@ -137,8 +137,10 @@ fun InboxScreen(navController: NavController) {
             LazyColumn {
                 items(sampleMessages) { message ->
                     MessageItemWithButton(
+                        navController,
                         message = message,
                         onClick = {
+
                             if (navController != null) {
                                 navController.navigate("chat/${message.id}")
                             } else {
@@ -162,7 +164,7 @@ fun InboxScreen(navController: NavController) {
 }
 
 @Composable
-fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
+fun MessageItemWithButton(navController: NavController,message: Message, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -208,6 +210,7 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
                     modifier = Modifier
                         .background(Color(0xFF5EA7FF), RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .clickable { navController.navigate("voting") }
                 )
             }
         }

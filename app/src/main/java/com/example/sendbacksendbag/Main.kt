@@ -1,34 +1,27 @@
 package com.example.sendbacksendbag
 
-import HomeScreen // 실제 Composable import 필요
-import Send // 실제 Composable import 필요
-import Sended // 실제 Composable import 필요
-import Sending // 실제 Composable import 필요
-import SettingsScreen // 실제 Composable import 필요
-import android.content.Context
-import android.util.Log
+import HomeScreen
+import Send
+import Sended
+import Sending
+import SettingsScreen
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController // NavHostController import
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.sendbacksendbag.data.FriendsRepository
-import com.example.sendbacksendbag.ui.friends.FriendsScreen
-import com.example.sendbacksendbag.ui.login.AuthScreen
-import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
-import com.example.sendbacksendbag.ui.voting.PollScreen
 import com.example.sendbacksendbag.authentication.AuthViewModel
-import com.example.sendbacksendbag.ui.voting.MyPollScreen
-import com.example.sendbacksendbag.ui.voting.VotingViewModel
-import com.example.sendbacksendbag.ui.voting.VotingViewModelFactory
+import com.example.sendbacksendbag.data.FriendsRepository
 import com.example.sendbacksendbag.ui.friends.AddFriendScreen
+import com.example.sendbacksendbag.ui.friends.FriendsScreen
 import com.example.sendbacksendbag.ui.friends.FriendsViewModel
 import com.example.sendbacksendbag.ui.friends.FriendsViewModelFactory
-
-// import com.example.sendbacksendbag.FeedbackViewModel // ViewModel import (실제 경로 확인)
-// import com.example.sendbacksendbag.R // R import
+import com.example.sendbacksendbag.ui.login.AuthScreen
+import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
+import com.example.sendbacksendbag.ui.voting.*
 
 @Composable
 fun AppNavGraph(
@@ -82,8 +75,9 @@ fun AppNavGraph(
         composable("send") {
             Send(navController) // 실제 Send Composable 사용
         }
-        composable("sending") {
-            Sending("박지열", "니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;", navController) // 실제 Sending Composable 사용
+        composable("sending/{receiverName}") { backStackEntry ->
+            val receiverName = backStackEntry.arguments?.getString("receiverName") ?: "Unknown"
+            Sending(receiverName, "니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;", navController) // 실제 Sending Composable 사용
         }
         composable("sended") {
             Sended(navController) // 실제 Sended Composable 사용
