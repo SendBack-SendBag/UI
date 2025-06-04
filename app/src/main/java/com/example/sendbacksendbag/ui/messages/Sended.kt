@@ -1,8 +1,9 @@
+package com.example.sendbacksendbag.ui.messages
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -14,20 +15,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.runtime.Composable
-import com.example.sendbacksendbag.ExpandableFabExample
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun Sended(navHostController: NavHostController){
+fun Sended(
+    navHostController: NavHostController,
+    messageId: String,
+    messageViewModel: MessageViewModel = viewModel()
+) {
+    // messageViewModel에서 해당 ID의 메시지 찾기
+    val messages by messageViewModel.messages.collectAsState()
+    val message = messages.find { it.id == messageId }
+
+    // 메시지가 존재하면 상세 화면 표시, 없으면 기본 메시지 사용
     FeedbackDetailScreen(
-        userName = "박지열",
-        message = "네 말은 중요하지만 상대의 말이 끝난 다음에 이야기해주면 소통이 더 잘될 것 같아.\n상대방의 말을 조금만 더 들어줬으면 좋겠어.",
-        onBack = { navHostController.popBackStack()  },
-        onFabClick = { /* 메뉴 클릭 */ },
-        navController = navHostController
+        userName = message?.name ?: "메시지를 찾을 수 없음",
+        message = message?.content ?: "메시지를 찾을 수 없습니다.",  // 원본 메시지(content) 사용
+        time = message?.time ?: "",
+        navController = navHostController,
+        onBack = { navHostController.popBackStack() }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedbackDetailScreen(
     userName: String,
@@ -50,12 +59,12 @@ fun FeedbackDetailScreen(
                     }
                 },
                 title = {
-                        Text(
-                            text = userName,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = 20.sp,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
+                    Text(
+                        text = userName,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 20.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
 
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -72,7 +81,7 @@ fun FeedbackDetailScreen(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 말풍선
+                // 말풍선 - 원본 메시지 표시
                 Card(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f),
@@ -81,7 +90,7 @@ fun FeedbackDetailScreen(
                     )
                 ) {
                     Text(
-                        text = message,
+                        text = message,  // 여기서는 원본 메시지가 표시됨 (FeedbackDetailScreen의 파라미터)
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyLarge
                     )

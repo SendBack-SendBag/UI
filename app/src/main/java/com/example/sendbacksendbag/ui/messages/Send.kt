@@ -1,24 +1,15 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+package com.example.sendbacksendbag.ui.messages
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,34 +24,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.NavController
-import com.example.sendbacksendbag.*
-import com.example.sendbacksendbag.R
-import com.example.sendbacksendbag.ui.friends.FriendsScreen
-import com.example.sendbacksendbag.ui.login.AuthScreen
-import com.example.sendbacksendbag.ui.profile.ProfileData
-import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
-import com.example.sendbacksendbag.ui.voting.PollScreen
 
-// 메시지 데이터 모델
-data class Message(
-    val name: String,
-    val avatarRes: Int,
-    val content: String,
-    val time: String
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SendScreen(
-    messages: List<Message>,
-    navController: NavController
+    navController: NavController,
+    messageViewModel: MessageViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-
+    val sentMessages by messageViewModel.sentMessages.collectAsState()
+    val messageSent by messageViewModel.messageSent.collectAsState()
+    // 메시지 전송 완료 이벤트 처리
+    LaunchedEffect(messageSent) {
+        if (messageSent) {
+            // 전송 완료 후 상태 초기화
+            messageViewModel.resetMessageSent()
+        }
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
@@ -77,6 +57,7 @@ fun SendScreen(
             )
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(16.dp))
+
             // 검색 바
             Box(
                 modifier = Modifier
@@ -86,22 +67,29 @@ fun SendScreen(
                     .height(40.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
-                CenteredVerticalSearchField()
+                CenteredVerticalSearchField(searchQuery) { searchQuery = it }
             }
+
             Spacer(modifier = Modifier.height(8.dp))
+
+            // 전송된 메시지와 예정된 메시지 둘 다 표시
             LazyColumn {
-                items(messages.filter {
-                    it.name.contains(searchQuery, true)
+                items(sentMessages.filter {
+                    // 이름이나 내용에 검색어가 포함된 항목만 표시
+                    (it.name.contains(searchQuery, true) ||
+                     it.content.contains(searchQuery, true) ||
+                     it.transformedContent.contains(searchQuery, true))
                 }) { msg ->
                     MessageItem(
                         msg = msg,
                         onClick = {
-                            navController.navigate("sended")
+                            navController.navigate("sended/${msg.id}")
                         }
                     )
                 }
             }
         }
+
         ExpandableFabExample(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -139,13 +127,41 @@ private fun MessageItem(
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = msg.content,
+                text = msg.sendingTime + "에 전송될 예정입니다. ",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
         }
         Text(text = msg.time, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
     }
+}
+
+
+@Composable
+fun CenteredVerticalSearchField(value: String, onValueChange: (String) -> Unit) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .padding(horizontal = 16.dp),
+        textStyle = TextStyle(fontSize = 14.sp, color = Color.DarkGray),
+        decorationBox = { inner ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                if (value.isEmpty()) {
+                    Text(text = "Search", color = Color.Gray, fontSize = 16.sp)
+                }
+                inner()
+            }
+        }
+    )
 }
 
 @Composable
@@ -161,57 +177,12 @@ private fun MiniFab(
     }
 }
 
-@Composable
-fun Send(navController: NavController) {
-    val sampleList = listOf(
-        Message("박지열", R.drawable.example , "20시에 전송될 예정입니다.", "오후 1:33"),
-        Message("이승주", R.drawable.example, "18시에 전송될 예정입니다.", "오후 3:34"),
-        Message("나이병", R.drawable.example ,"23시에 전송될 예정입니다.", "오후 5:21")
-    )
-    SendScreen(messages = sampleList, navController)
-}
-@Composable
-fun BlackHorizontalLine() {
-    Divider(
-        color = Color.Black,
-        thickness = 1.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)  // 좌우 16dp 패딩
-    )
-}
-@Composable
-fun CenteredVerticalSearchField() {
-    var searchQuery by remember { mutableStateOf("") }
-
-    BasicTextField(
-        value = searchQuery,
-        onValueChange = { searchQuery = it },
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .padding(horizontal = 16.dp),    // 좌우 패딩
-        textStyle = TextStyle(
-            fontSize = 14.sp,
-            color = Color.DarkGray
-        ),
-        decorationBox = { inner ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 10.dp), // 위·아래 10dp 패딩
-                contentAlignment = Alignment.CenterStart // 왼쪽 정렬, 세로 중앙
-            ) {
-                if (searchQuery.isEmpty()) {
-                    Text(
-                        text = "Search",
-                        color = Color.Gray,
-                        fontSize = 16.sp
-                    )
-                }
-                inner()  // 실제 입력 텍스트
-            }
-        }
-    )
-}
+//@Composable
+//fun Send(navController: NavController) {
+//    val sampleList = listOf(
+//        Message(name = "박지열", avatarRes = R.drawable.example , status = "20시에 전송될 예정입니다.", time = "오후 1:33"),
+//        Message(name = "이승주", avatarRes = R.drawable.example, status = "18시에 전송될 예정입니다.", time = "오후 3:34"),
+//        Message(name = "나이병", avatarRes =  R.drawable.example ,status = "23시에 전송될 예정입니다.", time = "오후 5:21")
+//    )
+//    SendScreen(messages = sampleList, navController)
+//}
