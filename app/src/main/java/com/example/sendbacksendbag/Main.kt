@@ -1,5 +1,11 @@
 package com.example.sendbacksendbag
 
+import HomeScreen // 실제 Composable import 필요
+import Sended // 실제 Composable import 필요
+import Sending // 실제 Composable import 필요
+import SettingsScreen // 실제 Composable import 필요
+import android.content.Context
+import android.util.Log
 import HomeScreen
 import SettingsScreen
 import androidx.compose.runtime.*
@@ -10,13 +16,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.sendbacksendbag.authentication.AuthViewModel
 import com.example.sendbacksendbag.data.FriendsRepository
+import com.example.sendbacksendbag.ui.login.AuthScreen
+import com.example.sendbacksendbag.authentication.AuthViewModel
 import com.example.sendbacksendbag.ui.friends.AddFriendScreen
 import com.example.sendbacksendbag.ui.friends.FriendsScreen
 import com.example.sendbacksendbag.ui.friends.FriendsViewModel
 import com.example.sendbacksendbag.ui.friends.FriendsViewModelFactory
-import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.*
 

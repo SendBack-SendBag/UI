@@ -1,5 +1,11 @@
 package com.example.sendbacksendbag
 
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,11 +31,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.sendbacksendbag.*
+import com.example.sendbacksendbag.R
+import com.example.sendbacksendbag.ui.friends.FriendsScreen
+import com.example.sendbacksendbag.ui.login.AuthScreen
+import com.example.sendbacksendbag.ui.profile.ProfileData
+import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
+import com.example.sendbacksendbag.ui.voting.PollScreen
+
 
 @Composable
 fun SendScreen(
     navController: NavController,
     messageViewModel: MessageViewModel = viewModel()
+
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val sentMessages by messageViewModel.sentMessages.collectAsState()
@@ -101,7 +116,7 @@ fun SendScreen(
 
 @Composable
 private fun MessageItem(
-    msg: Message,
+    msg: Message2,
     onClick: () -> Unit
 ) {
     Row(
@@ -139,6 +154,7 @@ private fun MessageItem(
 
 @Composable
 fun CenteredVerticalSearchField(value: String, onValueChange: (String) -> Unit) {
+
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -163,26 +179,3 @@ fun CenteredVerticalSearchField(value: String, onValueChange: (String) -> Unit) 
         }
     )
 }
-
-@Composable
-private fun MiniFab(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
-) {
-    FloatingActionButton(
-        onClick = onClick,
-        modifier = Modifier.size(40.dp)
-    ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
-    }
-}
-
-//@Composable
-//fun Send(navController: NavController) {
-//    val sampleList = listOf(
-//        Message(name = "박지열", avatarRes = R.drawable.example , status = "20시에 전송될 예정입니다.", time = "오후 1:33"),
-//        Message(name = "이승주", avatarRes = R.drawable.example, status = "18시에 전송될 예정입니다.", time = "오후 3:34"),
-//        Message(name = "나이병", avatarRes =  R.drawable.example ,status = "23시에 전송될 예정입니다.", time = "오후 5:21")
-//    )
-//    SendScreen(messages = sampleList, navController)
-//}
