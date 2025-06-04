@@ -1,4 +1,4 @@
-package com.example.sendbacksendbag.ui.messages
+package com.example.sendbacksendbag
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

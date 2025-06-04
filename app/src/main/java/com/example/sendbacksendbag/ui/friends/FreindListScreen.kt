@@ -24,10 +24,10 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import com.example.sendbacksendbag.ui.messages.ExpandableFabExample
+import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.ui.profile.ProfileData
 import androidx.compose.ui.platform.LocalContext // Coil에 필요
-import com.example.sendbacksendbag.ui.messages.BlackHorizontalLine
+import com.example.sendbacksendbag.BlackHorizontalLine
 import com.example.sendbacksendbag.ui.profile.formatDisplayTime
 
 

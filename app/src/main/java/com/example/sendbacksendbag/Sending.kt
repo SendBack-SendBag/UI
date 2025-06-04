@@ -1,4 +1,4 @@
-package com.example.sendbacksendbag.ui.messages
+package com.example.sendbacksendbag
 
 import android.widget.Toast
 import androidx.compose.foundation.background

@@ -33,7 +33,7 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import com.example.sendbacksendbag.ui.messages.ExpandableFabExample
+import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.data.FriendsRepository
 import kotlinx.coroutines.flow.map

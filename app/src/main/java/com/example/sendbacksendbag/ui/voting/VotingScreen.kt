@@ -33,7 +33,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.lifecycle.viewmodel.compose.viewModel // ViewModel 의존성 추가
 import androidx.navigation.NavController
-import com.example.sendbacksendbag.ui.messages.ExpandableFabExample
+import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import kotlinx.coroutines.launch
 

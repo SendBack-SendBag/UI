@@ -3,16 +3,13 @@ package com.example.sendbacksendbag.data
 import android.content.Context
 import android.util.Log
 import com.example.sendbacksendbag.R
-import com.example.sendbacksendbag.ui.messages.Message
+import com.example.sendbacksendbag.Message
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.util.*
 
 class MessageRepository(private val context: Context) {
 

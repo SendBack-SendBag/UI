@@ -14,8 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.sendbacksendbag.ui.messages.BlackHorizontalLine
-import com.example.sendbacksendbag.ui.messages.ExpandableFabExample
+import com.example.sendbacksendbag.BlackHorizontalLine
+import com.example.sendbacksendbag.ExpandableFabExample
 
 // 투표 데이터 모델
 data class Poll(

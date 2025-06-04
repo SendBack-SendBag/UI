@@ -1,9 +1,8 @@
-package com.example.sendbacksendbag.ui.messages
+package com.example.sendbacksendbag
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.communication.GeminiTranslator
 import com.example.sendbacksendbag.data.MessageRepository
 import kotlinx.coroutines.Job

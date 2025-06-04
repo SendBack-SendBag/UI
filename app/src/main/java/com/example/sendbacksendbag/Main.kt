@@ -1,8 +1,6 @@
 package com.example.sendbacksendbag
 
 import HomeScreen
-import com.example.sendbacksendbag.ui.messages.SendScreen
-import com.example.sendbacksendbag.ui.messages.Sending
 import SettingsScreen
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
@@ -19,7 +17,6 @@ import com.example.sendbacksendbag.ui.friends.FriendsScreen
 import com.example.sendbacksendbag.ui.friends.FriendsViewModel
 import com.example.sendbacksendbag.ui.friends.FriendsViewModelFactory
 import com.example.sendbacksendbag.ui.login.AuthScreen
-import com.example.sendbacksendbag.ui.messages.*
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.*
 

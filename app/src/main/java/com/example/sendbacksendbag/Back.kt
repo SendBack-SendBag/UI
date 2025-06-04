@@ -1,4 +1,4 @@
-package com.example.sendbacksendbag.ui.messages
+package com.example.sendbacksendbag
 
 import android.content.Intent
 import android.os.Bundle

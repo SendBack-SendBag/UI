@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel // viewModel 임포트는 유지 (Factory 사용 시 필요)
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.sendbacksendbag.ui.messages.ExpandableFabExample
+import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import kotlinx.coroutines.launch
