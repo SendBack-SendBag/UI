@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 fun PollScreen(name:String,navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()    
     Box {
         Scaffold(
             modifier = Modifier

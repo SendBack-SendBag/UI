@@ -122,6 +122,8 @@ fun InboxScreen(navController: NavController) {
             time = "8m ago"
         )
     )
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedMessage by remember { mutableStateOf<Message?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -144,8 +146,10 @@ fun InboxScreen(navController: NavController) {
             LazyColumn {
                 items(sampleMessages) { message ->
                     MessageItemWithButton(
+                        navController,
                         message = message,
                         onClick = {
+
                             if (navController != null) {
                                 navController.navigate("chat/${message.id}")
                             } else {
@@ -169,7 +173,9 @@ fun InboxScreen(navController: NavController) {
 }
 
 @Composable
-fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
+fun MessageItemWithButton(navController: NavController,message: Message, onClick: () -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedMessage by remember { mutableStateOf<Message?>(null) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -215,9 +221,53 @@ fun MessageItemWithButton(message: Message, onClick: () -> Unit) {
                     modifier = Modifier
                         .background(Color(0xFF5EA7FF), RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .clickable {
+                            // 다이얼로그 띄우기 위해 상태 업데이트
+                            selectedMessage = message
+                            showDialog = true
+                        }
                 )
             }
         }
+    }
+    if (showDialog && selectedMessage != null) {
+        AlertDialog(
+            onDismissRequest = {
+                // 다이얼로그 외부를 누르거나 백버튼을 눌렀을 때
+                showDialog = false
+                selectedMessage = null
+            },
+            title = {
+                Text(text = "투표 확인")
+            },
+            text = {
+                Text(text = "정말로 투표 올리시겠습니까?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // “확인” 버튼을 눌렀을 때: 네비게이션 또는 원하는 액션 수행
+                        navController.navigate("voting")
+                        // 다이얼로그 닫기
+                        showDialog = false
+                        selectedMessage = null
+                    }
+                ) {
+                    Text(text = "확인")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        // “취소” 버튼을 눌렀을 때: 다이얼로그만 닫기
+                        showDialog = false
+                        selectedMessage = null
+                    }
+                ) {
+                    Text(text = "취소")
+                }
+            }
+        )
     }
 }
 
