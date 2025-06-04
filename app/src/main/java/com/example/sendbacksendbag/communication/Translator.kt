@@ -20,7 +20,9 @@ fun SendBack(
         .generativeModel("gemini-2.5-pro") // 모델 이름 확인 (기존 코드 유지)
 
     val prompt = """You will be provided with feedback text:
-{$input}
+{
+feedback_text = $input
+}
 
 Follow these steps to transform the feedback:
 
@@ -38,9 +40,9 @@ Input:
 "야, 김XX 너 진짜 일 못한다. 그따위로 할거면 그냥 나가. 완전 짜증나!"
 
 Output:
-"업무에 대한 피드백입니다. 김XX님의 업무 방식에 개선이 필요한 부분이 있습니다. 함께 협력하여 더 나은 결과를 만들 수 있도록 노력하면 좋겠습니다.
+"김XX님의 업무 방식에 개선이 필요한 부분이 있습니다. 함께 협력하여 더 나은 결과를 만들 수 있도록 노력하면 좋겠습니다.
 """
-
+  
     val response = model.generateContentStream(prompt)
 
     return response
@@ -123,13 +125,4 @@ object GeminiTranslator {
             "댓글 생성 중 오류가 발생했습니다." // 오류 발생 시 메시지
         }
     }
-}
-// --- object 추가 끝 ---
-
-@Preview
-@Composable
-fun commentPreview() {
-    // Flow<GenerateContentResponse>를 직접 print하는 것은 어려우므로 주석 처리 또는 수정 필요
-    // val a : Flow<GenerateContentResponse> = Comment("이것은 테스트입니다.")
-    // print(a)
 }

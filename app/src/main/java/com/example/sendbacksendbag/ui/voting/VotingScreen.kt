@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -34,10 +33,8 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.lifecycle.viewmodel.compose.viewModel // ViewModel 의존성 추가
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
-import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
