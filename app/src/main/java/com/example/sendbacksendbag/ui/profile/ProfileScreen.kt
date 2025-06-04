@@ -191,6 +191,11 @@ fun ProfileScreenContainer(
             if (isEditingState) {
                 tempProfileData = updatedData
             }
+        },
+        onSendFeedbackClick = {
+            if (!isMyProfile && profileDataFromRepo.id != null && profileDataFromRepo.id != "me") {
+                navController.navigate("feedback/${profileDataFromRepo.id}")
+            }
         }
     )
 }
@@ -211,7 +216,8 @@ fun ProfileScreen(
     onSaveClick: () -> Unit,
     onCancelClick: () -> Unit,
     onProfileImageChangeClick: () -> Unit,
-    onProfileDataChange: (ProfileData) -> Unit
+    onProfileDataChange: (ProfileData) -> Unit,
+    onSendFeedbackClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -268,6 +274,7 @@ fun ProfileScreen(
                         }
                     }
                 )
+
                 // Add bottom padding to ensure FAB doesn't overlap excessively
                 Spacer(modifier = Modifier.height(80.dp))
             }
@@ -279,58 +286,60 @@ fun ProfileScreen(
                 navController = navController
             )
         }
-    Box {
-        Scaffold(
-            topBar = {
-                androidx.compose.material3.TopAppBar(
-                    title = {
-                        androidx.compose.material3.Text(
-                            text = "프로필",
-                            fontWeight = FontWeight.Black,
-                            fontSize = 25.sp
-                        )
-                    },
-                    navigationIcon = {
-                        androidx.compose.material3.IconButton(onClick = {
-                            navController.popBackStack()
-                        }) {
-                            androidx.compose.material.Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
+        Box {
+            Scaffold(
+                topBar = {
+                    androidx.compose.material3.TopAppBar(
+                        title = {
+                            androidx.compose.material3.Text(
+                                text = "프로필",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 25.sp
                             )
+                        },
+                        navigationIcon = {
+                            androidx.compose.material3.IconButton(onClick = {
+                                navController.popBackStack()
+                            }) {
+                                androidx.compose.material.Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
                         }
-                    }
-                )
-            },
-            containerColor = Color.White
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .background(Color.White)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                HorizontalDivider(
-                    color = Color.Black,
-                    thickness = 1.dp,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                ProfileCard(
-                    navController,
-                    profileData = profileData,
-                    isEditing = isEditing,
-                    onProfileImageChangeClick = onProfileImageChangeClick,
-                    onProfileDataChange = onProfileDataChange
-                )
+                    )
+                },
+                containerColor = Color.White
+            ) { innerPadding ->
+                Column(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .background(Color.White)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    HorizontalDivider(
+                        color = Color.Black,
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    ProfileCard(
+                        profileData = profileData,
+                        isEditing = isEditing,
+                        onProfileImageChangeClick = onProfileImageChangeClick,
+                        onProfileDataChange = onProfileDataChange,
+                        onSendFeedbackClick = onSendFeedbackClick,
+                        isMyProfile = isMyProfile
+                    )
+                }
             }
+            ExpandableFabExample(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                navController = navController
+            )
         }
-        ExpandableFabExample(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            navController = navController
-        )
     }
 }
 

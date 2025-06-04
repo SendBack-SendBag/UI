@@ -1,7 +1,6 @@
 package com.example.sendbacksendbag
 
 import HomeScreen // 실제 Composable import 필요
-import Send // 실제 Composable import 필요
 import Sended // 실제 Composable import 필요
 import Sending // 실제 Composable import 필요
 import SettingsScreen // 실제 Composable import 필요
@@ -18,14 +17,11 @@ import com.example.sendbacksendbag.data.FriendsRepository
 import com.example.sendbacksendbag.ui.friends.FriendsScreen
 import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
-import com.example.sendbacksendbag.ui.voting.PollScreen
 import com.example.sendbacksendbag.authentication.AuthViewModel
-import com.example.sendbacksendbag.ui.voting.MyPollScreen
-import com.example.sendbacksendbag.ui.voting.VotingViewModel
-import com.example.sendbacksendbag.ui.voting.VotingViewModelFactory
 import com.example.sendbacksendbag.ui.friends.AddFriendScreen
 import com.example.sendbacksendbag.ui.friends.FriendsViewModel
 import com.example.sendbacksendbag.ui.friends.FriendsViewModelFactory
+import com.example.sendbacksendbag.ui.voting.*
 
 // import com.example.sendbacksendbag.FeedbackViewModel // ViewModel import (실제 경로 확인)
 // import com.example.sendbacksendbag.R // R import
