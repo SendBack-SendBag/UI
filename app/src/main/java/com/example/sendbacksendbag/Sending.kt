@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CoroutineScope
@@ -118,23 +117,27 @@ fun Sending(
                             // 코루틴 스코프에서 실행
                             val scope = CoroutineScope(Dispatchers.Main)
                             scope.launch {
-                                // 메시지 전송이 완료될 때까지 대기
-                                val job = messageViewModel.sendMessage(
-                                    receiverName = userName,
-                                    content = inputMessage,
-                                    sendingTime = sendingTime
-                                )
-                                job.join() // 전송이 완료될 때까지 대기
+                                try {
+                                    // 메시지 전송이 완료될 때까지 대기
+                                    val job = messageViewModel.sendMessage(
+                                        receiverName = userName,
+                                        content = inputMessage,
+                                        sendingTime = sendingTime
+                                    )
+                                    job.join() // 전송이 완료될 때까지 대기
 
-                                // 전송 완료 후 네비게이션
-                                navController.navigate("send") {
-                                    popUpTo("send") {
-                                        inclusive = true
-                                    }
+                                    // 성공 메시지 표시
+                                    Toast.makeText(context, "메시지가 성공적으로 전송되었습니다", Toast.LENGTH_SHORT).show()
+
+                                    // 명시적으로 메시지 목록 다시 로드
+                                    messageViewModel.refreshMessages()
+
+                                    // 전송 완료 후 네비게이션
+                                    navController.popBackStack()
+                                    navController.navigate("send")
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "메시지 전송 중 오류: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
-
-                                // 메시지 입력 초기화
-                                inputMessage = ""
                             }
                         }
                     },
@@ -153,7 +156,7 @@ fun Sending(
                         )
                     } else {
                         Text(
-                            text = "보내기", // "Send"에서 "보내기"로 변경
+                            text = "보내기",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -168,12 +171,5 @@ fun Sending(
                 navController = navController
             )
         }
-    }
-}
-
-// MessageViewModel 확장 함수
-fun MessageViewModel.clearError() {
-    viewModelScope.launch {
-        _error.value = null
     }
 }
