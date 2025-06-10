@@ -59,7 +59,7 @@ data class ChatMessage(
 )
 
 @Composable
-fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel = viewModel(), votingcontainerViewModel: VotingContainerViewModel = viewModel()) {
+fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel = viewModel(), votingcontainerViewModel: VotingContainerViewModel) {
     val receivedMessages by messageViewModel.receivedMessages.collectAsState()
     var searchText by remember { mutableStateOf("") }
 
@@ -191,7 +191,7 @@ fun AnonymousMessageItem(
                     modifier = Modifier
                         .background(Color(0xFF5EA7FF), RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
-                        .clickable { navController.navigate("voting") }
+                        .clickable { showDialog = true; selectedMessage = message } // 클릭 시 다이얼로그 표시
                 )
             }
         }
