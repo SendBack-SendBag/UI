@@ -2,6 +2,7 @@ package com.example.sendbacksendbag
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
@@ -43,19 +44,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import com.example.sendbacksendbag.ui.voting.Poll
-
+import kotlinx.coroutines.launch
 
 
 // 채팅 메시지 데이터 클래스
 data class ChatMessage(
     val content: String,
     val isFromMe: Boolean,
-    val time: String
+    val time: String,
+    val isSpecialFormat: Boolean = false  // 기본값을 false로 설정
 )
 
 @Composable
@@ -191,7 +194,7 @@ fun AnonymousMessageItem(
                     modifier = Modifier
                         .background(Color(0xFF5EA7FF), RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
-                        .clickable { navController.navigate("voting") }
+                        .clickable { showDialog = true; selectedMessage = message } // 클릭 시 다이얼로그 표시
                 )
             }
         }
@@ -219,7 +222,8 @@ fun AnonymousMessageItem(
                             val newPoll = Poll(
                                 id = msg.name,
                                 title = "${msg.anonymousName}의 피드백에 대한 투표",
-                                subtitle = "피드백 내용에 대한 의견을 투표해주세요."
+                                subtitle = "피드백 내용에 대한 의견을 투표해주세요.",
+                                content = msg.transformedContent
                             )
                             // ViewModel에 추가
                             votingViewModel.addPoll(newPoll)
@@ -305,7 +309,8 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                 ChatMessage(
                     content = it,
                     isFromMe = true,
-                    time = ""
+                    time = "",
+                    isSpecialFormat = true  // 피드백 메시지는 특수 포맷으로 설정
                 )
             )
         }
@@ -540,9 +545,6 @@ fun FeedbackRatingCard(
 
 @Composable
 fun ChatMessageItem(message: ChatMessage) {
-    // 특수 메시지 플래그
-    val isSpecial = message.isFromMe && message.content == "네 말을 끝까지 듣도록 노력할게"
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -552,12 +554,7 @@ fun ChatMessageItem(message: ChatMessage) {
     ) {
         Row(
             verticalAlignment = Alignment.Top,
-            // special 메시지는 좌우 패딩을 줄여서 오른쪽으로 더 붙이기
-            modifier = Modifier
-                .padding(
-                    start  = if (isSpecial) 32.dp else 16.dp,
-                    end    = 16.dp
-                )
+            modifier = Modifier.widthIn(max = 280.dp) // 메시지 최대 너비 제한
         ) {
             // --- 좌측 아바타: 내 메시지가 아니면 보여주기 ---
             if (!message.isFromMe) {
@@ -571,15 +568,16 @@ fun ChatMessageItem(message: ChatMessage) {
 
             // 메시지 버블 + 시간
             Column(
-                horizontalAlignment = if (message.isFromMe) Alignment.End else Alignment.Start
+                horizontalAlignment = if (message.isFromMe) Alignment.End else Alignment.Start,
+                modifier = Modifier.weight(1f, fill = false) // 필요한 크기만 차지하도록 설정
             ) {
                 Box(
                     modifier = Modifier
                         .background(
                             color = when {
-                                isSpecial        -> Color.White
+                                message.isSpecialFormat -> Color.White
                                 message.isFromMe -> Color(0xFF5EA7FF)
-                                else             -> Color.White
+                                else -> Color.White
                             },
                             shape = RoundedCornerShape(12.dp)
                         )
@@ -589,9 +587,9 @@ fun ChatMessageItem(message: ChatMessage) {
                         text = message.content,
                         fontSize = 14.sp,
                         color = when {
-                            isSpecial        -> Color.Black
+                            message.isSpecialFormat -> Color.Black
                             message.isFromMe -> Color.White
-                            else             -> Color.Black
+                            else -> Color.Black
                         }
                     )
                 }
@@ -603,8 +601,8 @@ fun ChatMessageItem(message: ChatMessage) {
                 )
             }
 
-            // --- 특수 메시지일 때만 우측 아바타 표시 ---
-            if (isSpecial) {
+            // 내가 보낸 메시지일 때는 항상 노란색 원 표시 (특수 포맷 여부 상관없이)
+            if (message.isFromMe) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
@@ -612,13 +610,10 @@ fun ChatMessageItem(message: ChatMessage) {
                         .background(Color(0xFFFFE680), CircleShape)
                 )
             }
-            // 일반 내 메시지는 여분 공간 확보
-            else if (message.isFromMe) {
-                Spacer(modifier = Modifier.width(32.dp))
-            }
         }
     }
 }
+
 
 @Composable
 fun BlackHorizontalLine() {
@@ -717,16 +712,21 @@ class Back : ComponentActivity() {
         setContent {
             SendBackSendBagTheme {
                 val navController = rememberNavController()
-                val userId = intent.getStringExtra("userId") ?: "rabbit"  // "userId" 키로 수정
+                val userId = intent.getStringExtra("userId") ?: "rabbit"
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
                 val feedbackViewModel = viewModel<FeedbackViewModel>()
                 val votingcontainerViewModel = viewModel<VotingContainerViewModel>()
+
                 when (screenType) {
                     "inbox" -> InboxScreen(navController,  votingcontainerViewModel = votingcontainerViewModel)
                     "chat" -> ChatScreen(navController, userId = userId, feedbackViewModel = feedbackViewModel)
                     "feedback" -> {
                         val receiverName = intent.getStringExtra("receiverName") ?: ""
-                        FeedbackWriteScreen(navController, receiverName = receiverName, feedbackViewModel = feedbackViewModel)
+                        FeedbackWriteScreen(
+                            navController,
+                            receiverName = receiverName,
+                            feedbackViewModel = feedbackViewModel
+                        )
                     }
                 }
             }
@@ -739,15 +739,32 @@ class FeedbackViewModel : ViewModel() {
     private val _userFeedback = mutableStateOf<String?>(null)
     val userFeedback: State<String?> = _userFeedback
 
-    fun saveFeedback(feedback: String) {
-        _userFeedback.value = "네 말을 끝까지 듣도록 노력할게"
+    // 로딩 상태를 관리하기 위한 변수 추가
+    private val _isLoading = mutableStateOf(false)
+    val isLoading: State<Boolean> = _isLoading
+
+    // Gemini API를 사용하여 피드백을 변환하고 저장하는 함수
+    fun processFeedback(originalFeedback: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                // GeminiTranslator를 사용하여 피드백 변환
+                val transformedFeedback = com.example.sendbacksendbag.communication.GeminiTranslator.generateComment(originalFeedback)
+                _userFeedback.value = transformedFeedback
+            } catch (e: Exception) {
+                Log.e("FeedbackViewModel", "Error processing feedback: ${e.message}", e)
+                _userFeedback.value = "네 말을 끝까지 듣도록 노력할게" // 오류 시 기본 응답 제공
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
-    // 피드백을 초기 상태로 재설정하는 함수 추가
     fun resetFeedback() {
         _userFeedback.value = null
     }
 }
+
 
 @Composable
 fun FeedbackWriteScreen(navController: NavController, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel()) {
@@ -798,7 +815,7 @@ fun FeedbackWriteScreen(navController: NavController, receiverName: String,  fee
             ) {
                 // 대상 텍스트
                 Text(
-                    text = "잠만 자는 토끼에게 하고 싶은 말",
+                    text = "${receiverName}에게 하고 싶은 말",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     modifier = Modifier
@@ -842,7 +859,7 @@ fun FeedbackWriteScreen(navController: NavController, receiverName: String,  fee
                         onClick = {
                             // 피드백 저장 후 이전 화면으로 돌아가기
                             if (feedbackText.isNotEmpty()) {
-                                feedbackViewModel.saveFeedback(feedbackText)
+                                feedbackViewModel.processFeedback(feedbackText)
                             }
                             if (navController != null) {
                                 navController.popBackStack()
