@@ -367,9 +367,10 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                     ChatMessageItem(message)
                 }
 
-
-                item {
-                    Spacer(modifier = Modifier.height(170.dp))
+                // 피드백이 없을 때만 피드백 평가 카드 표시
+                if (userFeedback == null) {
+                    item {
+                        Spacer(modifier = Modifier.height(170.dp))
 
                     // 피드백 평가 카드 표시
                     FeedbackRatingCard(
@@ -400,6 +401,11 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                             }
                         }
                     )
+                }
+                } else {
+                    item {
+                        Spacer(modifier = Modifier.height(100.dp))
+                    }
                 }
             }
         }
