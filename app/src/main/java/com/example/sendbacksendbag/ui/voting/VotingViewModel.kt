@@ -3,14 +3,10 @@ package com.example.sendbacksendbag.ui.voting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sendbacksendbag.communication.GeminiTranslator
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.sendbacksendbag.data.FriendsRepository
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.random.Random
-import kotlinx.serialization.Serializable // kotlinx.serialization 임포트
-import com.example.sendbacksendbag.data.FriendsRepository // FriendsRepository 임포트
+import kotlinx.serialization.Serializable
 
 // --- @Serializable 추가 ---
 @Serializable
@@ -44,7 +40,7 @@ class VotingViewModel(
             // val loadingComment = CommentData(randomAuthor, "댓글 생성 중...", true)
             // repository.addCommentAndSave(loadingComment)
 
-            val generatedText = GeminiTranslator.generateComment(userInput)
+            val generatedText = GeminiTranslator.newComment(userInput)
             val newComment = CommentData(randomAuthor, generatedText, false)
 
             // 2. Repository를 통해 댓글 추가 및 저장 요청
