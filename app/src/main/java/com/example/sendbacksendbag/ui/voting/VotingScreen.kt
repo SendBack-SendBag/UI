@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollScreen(name:String,navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
+fun PollScreen(name:String,content:String ,navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()    
@@ -82,7 +82,7 @@ fun PollScreen(name:String,navController: NavController, viewModel: VotingViewMo
             },
             containerColor = Color(0xFFD6E9FA)
         ) { innerPadding ->
-            PollContent(name,Modifier.padding(innerPadding), viewModel)// ViewModel 전달
+            PollContent(name,content,Modifier.padding(innerPadding), viewModel)// ViewModel 전달
         }
         ExpandableFabExample(
             modifier = Modifier
@@ -110,7 +110,7 @@ fun PollScreen(name:String,navController: NavController, viewModel: VotingViewMo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingViewModel) { // ViewModel 받기
+fun PollContent(name:String, content:String,modifier: Modifier = Modifier, viewModel: VotingViewModel) { // ViewModel 받기
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -147,7 +147,7 @@ fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingView
             }
         }
 
-        FeedbackCard(name,
+        FeedbackCard(name,content ,
             onChatIconClick = {
                 scope.launch {
                     showBottomSheet = true
@@ -174,7 +174,7 @@ fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingView
 }
 
 @Composable
-fun FeedbackCard(name:String,
+fun FeedbackCard(name:String, content:String,
     onChatIconClick: () -> Unit) {
     var selectedOption by remember { mutableStateOf<PollOption?>(null) }
 
@@ -204,7 +204,7 @@ fun FeedbackCard(name:String,
             )
 
             Text(
-                text = "상대방의 말을 조금만 더 들어줬으면 좋겠어. 네 말도 중요하지만 상대의 말이 끝난 다음에 이야기해주면 소통이 더 잘 될 것 같아.",
+                text = content ,
                 style = MaterialTheme.typography.bodyMedium,
                 lineHeight = 22.sp,
                 modifier = Modifier.padding(bottom = 24.dp)

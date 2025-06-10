@@ -222,7 +222,8 @@ fun AnonymousMessageItem(
                             val newPoll = Poll(
                                 id = msg.name,
                                 title = "${msg.anonymousName}의 피드백에 대한 투표",
-                                subtitle = "피드백 내용에 대한 의견을 투표해주세요."
+                                subtitle = "피드백 내용에 대한 의견을 투표해주세요.",
+                                content = msg.transformedContent
                             )
                             // ViewModel에 추가
                             votingViewModel.addPoll(newPoll)
