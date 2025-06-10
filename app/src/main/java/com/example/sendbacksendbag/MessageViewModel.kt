@@ -38,7 +38,7 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
         loadAllMessages()
     }
 
-    private fun loadAllMessages() {
+    internal fun loadAllMessages() {
         viewModelScope.launch {
             // Repository의 두 StateFlow를 결합하여 하나의 목록으로 만듦
             combine(
@@ -86,6 +86,7 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
                 // Repository에 메시지 추가
                 messageRepository.addSentMessage(newMessage)
 
+                messageRepository.addReceivedMessage(newMessage)
                 // 전송 완료 알림
                 _messageSent.value = true
 
@@ -99,6 +100,13 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
     // 메시지 상태 업데이트
     fun updateMessageStatus(messageId: String, newStatus: String) {
         messageRepository.updateMessageStatus(messageId, newStatus)
+    }
+
+    // 메시지를 파일에서 다시 로드하는 함수
+    fun refreshMessages() {
+        viewModelScope.launch {
+            messageRepository.refreshMessages()
+        }
     }
 
     fun resetMessageSent() {

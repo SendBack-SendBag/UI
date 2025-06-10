@@ -2,8 +2,8 @@ package com.example.sendbacksendbag.data
 
 import android.content.Context
 import android.util.Log
-import com.example.sendbacksendbag.R
 import com.example.sendbacksendbag.Message
+import com.example.sendbacksendbag.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -149,7 +149,11 @@ class MessageRepository(private val context: Context) {
             updatedList
         }
     }
-
+    // 저장된 메시지를 파일에서 다시 로드하는 함수
+    fun refreshMessages() {
+        _sentMessages.value = loadSentMessages()
+        _receivedMessages.value = loadReceivedMessages()
+    }
     // ID로 메시지 조회
     fun getSentMessageById(id: String): Message? {
         return _sentMessages.value.find { it.id == id }

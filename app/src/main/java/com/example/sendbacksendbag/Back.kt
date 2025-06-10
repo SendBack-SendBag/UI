@@ -50,6 +50,7 @@ import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import com.example.sendbacksendbag.ui.voting.Poll
 
 
+
 // 채팅 메시지 데이터 클래스
 data class ChatMessage(
     val content: String,
@@ -62,6 +63,18 @@ fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel
     val receivedMessages by messageViewModel.receivedMessages.collectAsState()
     var searchText by remember { mutableStateOf("") }
 
+    val messageSent by messageViewModel.messageSent.collectAsState()
+
+    LaunchedEffect(Unit) {
+        messageViewModel.loadAllMessages()
+    }
+
+    // 메시지 전송 완료 시 추가 새로고침
+    LaunchedEffect(messageSent) {
+        if (messageSent) {
+            messageViewModel.loadAllMessages()
+        }
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             androidx.compose.material3.TopAppBar(
@@ -83,8 +96,9 @@ fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel
             LazyColumn {
                 items(receivedMessages.filter {
                     it.status == "전송됨" &&
-                            (it.anonymousName.contains(searchText, true) ||  // 익명 이름으로 검색
-                                    it.transformedContent.contains(searchText, true))
+
+                    (it.anonymousName.contains(searchText, true) ||
+                    it.transformedContent.contains(searchText, true))
                 }) { message ->
                     // 익명 이름으로 메시지 표시
                     AnonymousMessageItem(
@@ -127,6 +141,7 @@ fun AnonymousMessageItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
+
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
@@ -176,11 +191,7 @@ fun AnonymousMessageItem(
                     modifier = Modifier
                         .background(Color(0xFF5EA7FF), RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
-                        .clickable {
-                            // 다이얼로그 띄우기 위해 상태 업데이트
-                            selectedMessage = message
-                            showDialog = true
-                        }
+                        .clickable { navController.navigate("voting") }
                 )
             }
         }
@@ -236,6 +247,7 @@ fun AnonymousMessageItem(
             }
         )
     }
+
 }
 
 
