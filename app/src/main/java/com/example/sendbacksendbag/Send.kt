@@ -116,7 +116,7 @@ fun SendScreen(
 
 @Composable
 private fun MessageItem(
-    msg: Message2,
+    msg: Message,
     onClick: () -> Unit
 ) {
     Row(
