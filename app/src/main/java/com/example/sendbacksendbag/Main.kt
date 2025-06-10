@@ -167,9 +167,10 @@ fun AppNavGraph(
         composable("mypoll") { // <<--- 새로운 경로 추가
             MyPollScreen(navController,votingViewModel) // MyPollScreen 연결
         }
-        composable("poll/{pollId}") { backStackEntry ->
+        composable("poll/{pollId}/{pollContent}") { backStackEntry ->
+            val pollContent = backStackEntry.arguments?.getString("pollContent") ?: ""
             val pollId = backStackEntry.arguments?.getString("pollId") ?: ""
-            PollScreen(pollId, navController, votingViewModel) // PollScreen 연결
+            PollScreen(pollId,pollContent, navController, votingViewModel) // PollScreen 연결
         }
     }
 }

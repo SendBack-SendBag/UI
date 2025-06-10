@@ -23,7 +23,8 @@ import com.example.sendbacksendbag.VotingContainerViewModel
 data class Poll(
     val id: String,
     val title: String,
-    val subtitle: String
+    val subtitle: String,
+    val content: String
 )
 data class myPoll(
     val id: String,
@@ -135,7 +136,7 @@ fun PollListScreen(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { navController.navigate("poll/${poll.id}") },
+                                    .clickable { navController.navigate("poll/${poll.id}/${poll.content}") },
                                 shape = RoundedCornerShape(12.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFFD6E9FA))
