@@ -47,6 +47,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
+import com.example.sendbacksendbag.ui.voting.Poll
+
 
 
 // 채팅 메시지 데이터 클래스
@@ -57,7 +59,7 @@ data class ChatMessage(
 )
 
 @Composable
-fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel = viewModel()) {
+fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel = viewModel(), votingcontainerViewModel: VotingContainerViewModel = viewModel()) {
     val receivedMessages by messageViewModel.receivedMessages.collectAsState()
     var searchText by remember { mutableStateOf("") }
 
@@ -94,6 +96,7 @@ fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel
             LazyColumn {
                 items(receivedMessages.filter {
                     it.status == "전송됨" &&
+
                     (it.anonymousName.contains(searchText, true) ||
                     it.transformedContent.contains(searchText, true))
                 }) { message ->
@@ -103,7 +106,8 @@ fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel
                         message = message,
                         onClick = {
                             navController.navigate("chat/${message.id}")
-                        }
+                        },
+                        votingcontainerViewModel
                     )
                 }
             }
@@ -123,22 +127,26 @@ fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel
 fun AnonymousMessageItem(
     navController: NavController,
     message: Message,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    votingViewModel: VotingContainerViewModel// ViewModel 추가
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedMessage by remember { mutableStateOf<Message?>(null) }
 
-        Row(
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFAFDAFF)) // 밝은 하늘색
-            )
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFAFDAFF)) // 밝은 하늘색
+        )
 
         Spacer(modifier = Modifier.width(12.dp))
 
@@ -188,6 +196,58 @@ fun AnonymousMessageItem(
             }
         }
     }
+
+    if (showDialog && selectedMessage != null) {
+        AlertDialog(
+            onDismissRequest = {
+                // 다이얼로그 외부를 누르거나 백버튼을 눌렀을 때
+                showDialog = false
+                selectedMessage = null
+            },
+            title = {
+                Text(text = "투표 확인")
+            },
+            text = {
+                Text(text = "정말로 투표 올리시겠습니까?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // "확인" 버튼을 눌렀을 때: 투표 생성 및 네비게이션
+                        selectedMessage?.let { msg ->
+                            // 메시지 내용으로 새 투표 생성
+                            val newPoll = Poll(
+                                id = msg.name,
+                                title = "${msg.anonymousName}의 피드백에 대한 투표",
+                                subtitle = "피드백 내용에 대한 의견을 투표해주세요."
+                            )
+                            // ViewModel에 추가
+                            votingViewModel.addPoll(newPoll)
+                        }
+                        // 투표 화면으로 이동
+                        navController.navigate("voting")
+                        // 다이얼로그 닫기
+                        showDialog = false
+                        selectedMessage = null
+                    }
+                ) {
+                    Text(text = "확인")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        // "취소" 버튼을 눌렀을 때: 다이얼로그만 닫기
+                        showDialog = false
+                        selectedMessage = null
+                    }
+                ) {
+                    Text(text = "취소")
+                }
+            }
+        )
+    }
+
 }
 
 
@@ -660,9 +720,9 @@ class Back : ComponentActivity() {
                 val userId = intent.getStringExtra("userId") ?: "rabbit"  // "userId" 키로 수정
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
                 val feedbackViewModel = viewModel<FeedbackViewModel>()
-
+                val votingcontainerViewModel = viewModel<VotingContainerViewModel>()
                 when (screenType) {
-                    "inbox" -> InboxScreen(navController)
+                    "inbox" -> InboxScreen(navController,  votingcontainerViewModel = votingcontainerViewModel)
                     "chat" -> ChatScreen(navController, userId = userId, feedbackViewModel = feedbackViewModel)
                     "feedback" -> {
                         val receiverName = intent.getStringExtra("receiverName") ?: ""

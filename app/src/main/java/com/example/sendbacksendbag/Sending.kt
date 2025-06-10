@@ -33,7 +33,7 @@ fun Sending(
     userName: String = "박지열",
     message: String = "",
     navController: NavHostController,
-    messageViewModel: MessageViewModel = viewModel(),
+    messageViewModel: MessageViewModel,
     onBack: () -> Unit = { navController.popBackStack() }
 ) {
     val context = LocalContext.current

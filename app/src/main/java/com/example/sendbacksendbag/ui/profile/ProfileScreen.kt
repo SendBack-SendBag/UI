@@ -191,7 +191,7 @@ fun ProfileScreenContainer(
         },
         onSendFeedbackClick = {
             if (!isMyProfile && profileDataFromRepo.id != null && profileDataFromRepo.id != "me") {
-                navController.navigate("feedback/${profileDataFromRepo.id}")
+                navController.navigate("sending/${profileDataFromRepo.name}?sendingTime=${profileDataFromRepo.messageArrivalTime}")
             }
         }
     )
