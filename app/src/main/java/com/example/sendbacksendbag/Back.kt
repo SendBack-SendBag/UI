@@ -62,7 +62,7 @@ data class ChatMessage(
 )
 
 @Composable
-fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel = viewModel(), votingcontainerViewModel: VotingContainerViewModel) {
+fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel = viewModel(), votingcontainerViewModel: VotingContainerViewModel = viewModel()) {
     val receivedMessages by messageViewModel.receivedMessages.collectAsState()
     var searchText by remember { mutableStateOf("") }
 
@@ -714,9 +714,10 @@ class Back : ComponentActivity() {
                 val userId = intent.getStringExtra("userId") ?: "rabbit"
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
                 val feedbackViewModel = viewModel<FeedbackViewModel>()
+                val votingcontainerViewModel = viewModel<VotingContainerViewModel>()
 
                 when (screenType) {
-                    "inbox" -> InboxScreen(navController)
+                    "inbox" -> InboxScreen(navController,  votingcontainerViewModel = votingcontainerViewModel)
                     "chat" -> ChatScreen(navController, userId = userId, feedbackViewModel = feedbackViewModel)
                     "feedback" -> {
                         val receiverName = intent.getStringExtra("receiverName") ?: ""

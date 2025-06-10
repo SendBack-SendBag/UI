@@ -35,7 +35,7 @@ data class myPoll(
 @Composable
 fun PollListScreen(
     navController: NavHostController,
-    votingViewModel: VotingContainerViewModel
+    votingViewModel: VotingContainerViewModel = viewModel()
 ) {
     val mypolls = votingViewModel.myPolls
     val polls = votingViewModel.polls
