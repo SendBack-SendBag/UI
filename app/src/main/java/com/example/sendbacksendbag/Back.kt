@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,14 +31,15 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.*
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -143,12 +145,13 @@ fun AnonymousMessageItem(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-
+        Image(
+            painter = painterResource(R.drawable.example_picture),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFAFDAFF)) // 밝은 하늘색
         )
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -558,10 +561,13 @@ fun ChatMessageItem(message: ChatMessage) {
         ) {
             // --- 좌측 아바타: 내 메시지가 아니면 보여주기 ---
             if (!message.isFromMe) {
-                Box(
+                Image(
+                    painter = painterResource(R.drawable.example_picture),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color(0xFFFFE680), CircleShape)
+                        .clip(CircleShape)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }

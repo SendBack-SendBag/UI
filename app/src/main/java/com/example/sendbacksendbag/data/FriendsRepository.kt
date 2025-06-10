@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 
 // SharedPreferences Keys
@@ -209,8 +208,8 @@ class FriendsRepository(private val context: Context) {
             Log.w("Repository", "$FRIENDS_JSON_FILENAME not found. Returning default list.")
             // --- 초기 친구 목록 (예시) ---
             return listOf(
-                ProfileData(id = "rabbit", name = "잠만 자는 토끼", statusMessage = "쿨쿨", placeholderImageRes = R.drawable.example2),
-                ProfileData(id = "horse", name = "코딩하는 말", statusMessage = "타닥타닥", placeholderImageRes = R.drawable.example2)
+                ProfileData(id = "rabbit", name = "잠만 자는 토끼", statusMessage = "쿨쿨", placeholderImageRes = R.drawable.example_picture),
+                ProfileData(id = "horse", name = "코딩하는 말", statusMessage = "타닥타닥", placeholderImageRes = R.drawable.example_picture)
             )
         }
 
