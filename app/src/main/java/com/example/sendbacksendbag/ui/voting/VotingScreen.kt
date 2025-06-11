@@ -26,12 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.lifecycle.viewmodel.compose.viewModel // ViewModel 의존성 추가
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
@@ -252,7 +247,7 @@ fun CommentBottomSheet(
 ) {
     var commentInput by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val comments by viewModel.comments.collectAsState() // ViewModel에서 댓글 목록 가져오기
+    val comments by viewModel.currentPollComments.collectAsState()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
