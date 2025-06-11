@@ -24,25 +24,17 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.lifecycle.viewmodel.compose.viewModel // ViewModel 의존성 추가
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.sendbacksendbag.ExpandableFabExample
 import com.example.sendbacksendbag.R
-import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollScreen(name:String,navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
+fun PollScreen(name:String,content:String ,navController: NavController, viewModel: VotingViewModel = viewModel()) { // ViewModel 주입
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()    
@@ -85,7 +77,7 @@ fun PollScreen(name:String,navController: NavController, viewModel: VotingViewMo
             },
             containerColor = Color(0xFFD6E9FA)
         ) { innerPadding ->
-            PollContent(name,Modifier.padding(innerPadding), viewModel)// ViewModel 전달
+            PollContent(name,content,Modifier.padding(innerPadding), viewModel)// ViewModel 전달
         }
         ExpandableFabExample(
             modifier = Modifier
@@ -113,7 +105,7 @@ fun PollScreen(name:String,navController: NavController, viewModel: VotingViewMo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingViewModel) { // ViewModel 받기
+fun PollContent(name:String, content:String,modifier: Modifier = Modifier, viewModel: VotingViewModel) { // ViewModel 받기
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -150,7 +142,7 @@ fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingView
             }
         }
 
-        FeedbackCard(name,
+        FeedbackCard(name,content ,
             onChatIconClick = {
                 scope.launch {
                     showBottomSheet = true
@@ -177,7 +169,7 @@ fun PollContent(name:String,modifier: Modifier = Modifier, viewModel: VotingView
 }
 
 @Composable
-fun FeedbackCard(name:String,
+fun FeedbackCard(name:String, content:String,
     onChatIconClick: () -> Unit) {
     var selectedOption by remember { mutableStateOf<PollOption?>(null) }
 
@@ -207,7 +199,7 @@ fun FeedbackCard(name:String,
             )
 
             Text(
-                text = "상대방의 말을 조금만 더 들어줬으면 좋겠어. 네 말도 중요하지만 상대의 말이 끝난 다음에 이야기해주면 소통이 더 잘 될 것 같아.",
+                text = content ,
                 style = MaterialTheme.typography.bodyMedium,
                 lineHeight = 22.sp,
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -255,7 +247,7 @@ fun CommentBottomSheet(
 ) {
     var commentInput by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val comments by viewModel.comments.collectAsState() // ViewModel에서 댓글 목록 가져오기
+    val comments by viewModel.currentPollComments.collectAsState()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,

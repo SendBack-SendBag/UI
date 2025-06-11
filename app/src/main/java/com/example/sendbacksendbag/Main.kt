@@ -1,15 +1,11 @@
 package com.example.sendbacksendbag
 
 import HomeScreen // 실제 Composable import 필요
-import Sended // 실제 Composable import 필요
-import Sending // 실제 Composable import 필요
+// 실제 Composable import 필요
 import SettingsScreen // 실제 Composable import 필요
 import android.content.Context
 import android.util.Log
 import HomeScreen
-import Send
-import Sended
-import Sending
 import SettingsScreen
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
@@ -42,8 +38,9 @@ fun AppNavGraph(
     val votingViewModel: VotingViewModel = viewModel(
         factory = VotingViewModelFactory(friendsRepository)
     )
-
+    val messageViewModel = viewModel<MessageViewModel>() // MessageViewModel을 ViewModel로 사용
     val feedbackViewModel = viewModel<FeedbackViewModel>()
+    val votingcontainerViewModel = viewModel<VotingContainerViewModel>() // VotingContainerViewModel을 ViewModel로 사용
 
 
     // FeedbackViewModel (필요 시 실제 ViewModel 사용)
@@ -79,14 +76,38 @@ fun AppNavGraph(
             )
         }
         composable("send") {
-            Send(navController) // 실제 Send Composable 사용
+            SendScreen(navController = navController, messageViewModel = messageViewModel)
         }
-        composable("sending/{receiverName}") { backStackEntry ->
+        composable(
+            route = "sending/{receiverName}?sendingTime={sendingTime}",
+            arguments = listOf(
+                navArgument("receiverName") { type = NavType.StringType },
+                navArgument("sendingTime") {
+                    type = NavType.StringType
+                    defaultValue = "20:00"
+                }
+            )
+        ) { backStackEntry ->
             val receiverName = backStackEntry.arguments?.getString("receiverName") ?: "Unknown"
-            Sending(receiverName, "니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;", navController) // 실제 Sending Composable 사용
+            val sendingTime = backStackEntry.arguments?.getString("sendingTime") ?: "20:00"
+
+            Sending(
+                userName = receiverName,
+                message = "니 말만 하지 말고 상대방 말좀 들어. 짜증나게 맨날 자기 얘기만해;;; 말좀 끊지 말고 좀 제발;",
+                navController = navController,
+                messageViewModel = messageViewModel,
+            )
         }
-        composable("sended") {
-            Sended(navController) // 실제 Sended Composable 사용
+        composable(
+            route = "sended/{messageId}",
+            arguments = listOf(navArgument("messageId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val messageId = backStackEntry.arguments?.getString("messageId") ?: ""
+            Sended(
+                navHostController = navController,
+                messageId = messageId,
+                messageViewModel = messageViewModel
+            )
         }
         composable(
             route = "profile/{userId}",
@@ -119,10 +140,10 @@ fun AppNavGraph(
             )
         }
         composable("voting") {
-            PollListScreen(listOf(myPoll("나", "경청 후 말하기", "본인이 투표를 게시했습니다")),listOf(Poll("박지열", "먼저 듣고, 나중에 말하기", "박지열 님이 투표를 게시했습니다."), Poll("김승주", "끝까지 들어주는 작은 습관", "김승주 님이 투표를 게시했습니다."),Poll("권민서", "말하기 전 한 번 더 귀 기울이기", "권민서 님이 투표를 게시했습니다."),Poll("최승제", "상대의 마지막 말까지 기다리기", "최승제 님이 투표를 게시했습니다.")), navController) // 예시 데이터 사용)
+            PollListScreen(navController, votingViewModel = votingcontainerViewModel) // 예시 데이터 사용)
         }
         composable("inbox") {
-            InboxScreen(navController = navController) // 실제 InboxScreen Composable 사용
+            InboxScreen(navController = navController, votingcontainerViewModel = votingcontainerViewModel) // 실제 InboxScreen Composable 사용
         }
         composable("chat/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
@@ -146,9 +167,10 @@ fun AppNavGraph(
         composable("mypoll") { // <<--- 새로운 경로 추가
             MyPollScreen(navController,votingViewModel) // MyPollScreen 연결
         }
-        composable("poll/{pollId}") { backStackEntry ->
+        composable("poll/{pollId}/{pollContent}") { backStackEntry ->
+            val pollContent = backStackEntry.arguments?.getString("pollContent") ?: ""
             val pollId = backStackEntry.arguments?.getString("pollId") ?: ""
-            PollScreen(pollId, navController, votingViewModel) // PollScreen 연결
+            PollScreen(pollId,pollContent, navController, votingViewModel) // PollScreen 연결
         }
     }
 }

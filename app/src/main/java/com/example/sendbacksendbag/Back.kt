@@ -5,17 +5,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.ExperimentalMaterial3Api
-import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,7 +20,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -34,97 +28,58 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.*
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.border
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
-import com.example.sendbacksendbag.communication.SendBack
-import com.google.firebase.Firebase
-import com.google.firebase.ai.ai
-import com.google.firebase.ai.type.GenerativeBackend
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
+import com.example.sendbacksendbag.ui.voting.Poll
 import kotlinx.coroutines.launch
 
-
-// 메시지 데이터 클래스
-data class Message(
-    val id: String,
-    val name: String,
-    val avatarRes: Int,
-    val content: String,
-    val time: String,
-    val hasActionButton: Boolean = false
-)
 
 // 채팅 메시지 데이터 클래스
 data class ChatMessage(
     val content: String,
     val isFromMe: Boolean,
     val time: String,
-    val isSpecialFormat: Boolean = false // 특수 포맷(흰색 배경 + 노란색 원) 사용 여부
+    val isSpecialFormat: Boolean = false  // 기본값을 false로 설정
 )
 
 @Composable
-fun InboxScreen(navController: NavController) {
-    val context = LocalContext.current
-    val sampleMessages = listOf(
-        Message(
-            id = "rabbit",
-            name = "잠만 자는 토끼",
-            avatarRes = R.drawable.example2,
-            content = "메시지가 도착했습니다!",
-            time = "8m ago",
-            hasActionButton = true
-        ),
-        Message(
-            id = "horse",
-            name = "코딩하는 말",
-            avatarRes = R.drawable.example2,
-            content = "메시지가 도착했습니다!",
-            time = "8m ago"
-        ),
-        Message(
-            id = "otter",
-            name = "배 긁고 있는 수달",
-            avatarRes = R.drawable.example2,
-            content = "메시지가 도착했습니다!",
-            time = "8m ago"
-        ),
-        Message(
-            id = "badger",
-            name = "춤을 추는 오소리",
-            avatarRes = R.drawable.example2,
-            content = "메시지가 도착했습니다!",
-            time = "8m ago"
-        )
-    )
-    var showDialog by remember { mutableStateOf(false) }
-    var selectedMessage by remember { mutableStateOf<Message?>(null) }
+fun InboxScreen(navController: NavController, messageViewModel: MessageViewModel = viewModel(), votingcontainerViewModel: VotingContainerViewModel = viewModel()) {
+    val receivedMessages by messageViewModel.receivedMessages.collectAsState()
+    var searchText by remember { mutableStateOf("") }
 
+    val messageSent by messageViewModel.messageSent.collectAsState()
+
+    LaunchedEffect(Unit) {
+        messageViewModel.loadAllMessages()
+    }
+
+    // 메시지 전송 완료 시 추가 새로고침
+    LaunchedEffect(messageSent) {
+        if (messageSent) {
+            messageViewModel.loadAllMessages()
+        }
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             androidx.compose.material3.TopAppBar(
@@ -135,7 +90,6 @@ fun InboxScreen(navController: NavController) {
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings",
                             modifier = Modifier.size(30.dp)
-
                         )
                     }
                 }
@@ -143,21 +97,22 @@ fun InboxScreen(navController: NavController) {
             BlackHorizontalLine()
             Spacer(modifier = Modifier.height(8.dp))
 
+            // 전송된 메시지만 표시 (status가 "전송됨"인 것만)
             LazyColumn {
-                items(sampleMessages) { message ->
-                    MessageItemWithButton(
-                        navController,
+                items(receivedMessages.filter {
+                    it.status == "전송됨" &&
+
+                    (it.anonymousName.contains(searchText, true) ||
+                    it.transformedContent.contains(searchText, true))
+                }) { message ->
+                    // 익명 이름으로 메시지 표시
+                    AnonymousMessageItem(
+                        navController = navController,
                         message = message,
                         onClick = {
-
-                            if (navController != null) {
-                                navController.navigate("chat/${message.id}")
-                            } else {
-                                val intent = android.content.Intent(context, Back::class.java)
-                                intent.putExtra("userId", message.id)
-                                context.startActivity(intent)
-                            }
-                        }
+                            navController.navigate("chat/${message.id}")
+                        },
+                        votingcontainerViewModel
                     )
                 }
             }
@@ -172,10 +127,17 @@ fun InboxScreen(navController: NavController) {
     }
 }
 
+// 익명 이름을 사용하는 메시지 아이템 컴포넌트
 @Composable
-fun MessageItemWithButton(navController: NavController,message: Message, onClick: () -> Unit) {
+fun AnonymousMessageItem(
+    navController: NavController,
+    message: Message,
+    onClick: () -> Unit,
+    votingViewModel: VotingContainerViewModel// ViewModel 추가
+) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedMessage by remember { mutableStateOf<Message?>(null) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -183,29 +145,43 @@ fun MessageItemWithButton(navController: NavController,message: Message, onClick
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // ⚡️ 설정 아이콘 제거 후, 밝은 하늘색 원으로 대체
-        Box(
+        Image(
+            painter = painterResource(R.drawable.example_picture),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFAFDAFF)) // 밝은 하늘색
         )
 
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
+            // 익명 이름과 시간 표시
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = message.anonymousName,  // 익명 이름 사용
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // 변환된 메시지 내용 표시
             Text(
-                text = message.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
-            Text(
-                text = message.content,
+                text = "피드백이 도착했습니다!",
                 fontSize = 12.sp,
-                color = Color.DarkGray
+                color = Color.DarkGray,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
-
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = message.time,
@@ -221,15 +197,12 @@ fun MessageItemWithButton(navController: NavController,message: Message, onClick
                     modifier = Modifier
                         .background(Color(0xFF5EA7FF), RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
-                        .clickable {
-                            // 다이얼로그 띄우기 위해 상태 업데이트
-                            selectedMessage = message
-                            showDialog = true
-                        }
+                        .clickable { showDialog = true; selectedMessage = message } // 클릭 시 다이얼로그 표시
                 )
             }
         }
     }
+
     if (showDialog && selectedMessage != null) {
         AlertDialog(
             onDismissRequest = {
@@ -246,7 +219,19 @@ fun MessageItemWithButton(navController: NavController,message: Message, onClick
             confirmButton = {
                 TextButton(
                     onClick = {
-                        // “확인” 버튼을 눌렀을 때: 네비게이션 또는 원하는 액션 수행
+                        // "확인" 버튼을 눌렀을 때: 투표 생성 및 네비게이션
+                        selectedMessage?.let { msg ->
+                            // 메시지 내용으로 새 투표 생성
+                            val newPoll = Poll(
+                                id = msg.name,
+                                title = "${msg.anonymousName}의 피드백에 대한 투표",
+                                subtitle = "피드백 내용에 대한 의견을 투표해주세요.",
+                                content = msg.transformedContent
+                            )
+                            // ViewModel에 추가
+                            votingViewModel.addPoll(newPoll)
+                        }
+                        // 투표 화면으로 이동
                         navController.navigate("voting")
                         // 다이얼로그 닫기
                         showDialog = false
@@ -259,7 +244,7 @@ fun MessageItemWithButton(navController: NavController,message: Message, onClick
             dismissButton = {
                 TextButton(
                     onClick = {
-                        // “취소” 버튼을 눌렀을 때: 다이얼로그만 닫기
+                        // "취소" 버튼을 눌렀을 때: 다이얼로그만 닫기
                         showDialog = false
                         selectedMessage = null
                     }
@@ -269,7 +254,9 @@ fun MessageItemWithButton(navController: NavController,message: Message, onClick
             }
         )
     }
+
 }
+
 
 
 @Composable
@@ -279,8 +266,17 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
     var isDisliked by remember { mutableStateOf(false) }
     val userFeedback = feedbackViewModel.userFeedback.value
 
+    // messageViewModel에서 해당 userId에 대한 메시지 가져오기
+    val messageViewModel = viewModel<MessageViewModel>()
+    val messages by messageViewModel.messages.collectAsState()
+    val message = messages.find { it.id == userId }
+
+    // 해당 메시지의 anonymousName을 사용
+    val userName = message?.anonymousName ?: "익명의 사용자"
+    val transformedMessage = message?.transformedContent
+
     // 기본 메시지 및 사용자 피드백 메시지 추가
-    val chatMessages = remember(userFeedback) {
+    val chatMessages = remember(userFeedback, transformedMessage) {
         val initialMessages = when (userId) {
             "rabbit" -> listOf(
                 ChatMessage(
@@ -289,13 +285,25 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                     time = ""
                 )
             )
-            else -> listOf(
-                ChatMessage(
-                    content = "안녕하세요! 메시지를 확인해주세요.",
-                    isFromMe = false,
-                    time = ""
-                )
-            )
+            else -> {
+                if (transformedMessage != null) {
+                    listOf(
+                        ChatMessage(
+                            content = transformedMessage,  // 변환된 메시지 표시
+                            isFromMe = false,
+                            time = ""
+                        )
+                    )
+                } else {
+                    listOf(
+                        ChatMessage(
+                            content = "안녕하세요! 메시지를 확인해주세요.",
+                            isFromMe = false,
+                            time = ""
+                        )
+                    )
+                }
+            }
         }.toMutableList()
 
         // 사용자가 피드백을 작성했으면 메시지 목록에 추가
@@ -305,20 +313,12 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                     content = it,
                     isFromMe = true,
                     time = "",
-                    isSpecialFormat = true  // 특수 포맷 적용
+                    isSpecialFormat = true  // 피드백 메시지는 특수 포맷으로 설정
                 )
             )
         }
 
         initialMessages
-    }
-
-    val userName = when (userId) {
-        "rabbit" -> "잠만 자는 토끼"
-        "horse" -> "코딩하는 말"
-        "otter" -> "배 긁고 있는 수달"
-        "badger" -> "춤을 추는 오소리"
-        else -> "사용자"
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -327,10 +327,10 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
             .background(Color(0xFFE6F0FA))
         ) {
             // Top App Bar with back button (설정 버튼 제거)
-            androidx.compose.material3.TopAppBar(
+            TopAppBar(
                 title = {
                     Text(
-                        text = userName,
+                        text = userName,  // 익명 이름 사용
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -371,37 +371,45 @@ fun ChatScreen(navController: NavController, userId: String, feedbackViewModel: 
                 }
 
                 // 피드백이 없을 때만 피드백 평가 카드 표시
-                if (userId == "rabbit" && userFeedback == null) {
+                if (userFeedback == null) {
                     item {
                         Spacer(modifier = Modifier.height(170.dp))
 
-                        // 피드백 평가 카드 표시
-                        FeedbackRatingCard(
-                            isLiked = isLiked,
-                            isDisliked = isDisliked,
-                            onLikeClick = {
-                                isLiked = !isLiked
-                                if (isLiked) isDisliked = false
-                            },
-                            onDislikeClick = {
-                                isDisliked = !isDisliked
-                                if (isDisliked) isLiked = false
-                            },
-                            onFeedbackClick = {
-                                // 피드백 작성 화면으로 이동
-                                if (navController != null) {
-                                    navController.navigate("feedback/rabbit")
-                                } else {
-                                    val intent = Intent(context, Back::class.java)
-                                    intent.putExtra("screenType", "feedback")
-                                    intent.putExtra("receiverName", "잠만 자는 토끼")
-                                    context.startActivity(intent)
+                    // 피드백 평가 카드 표시
+                    FeedbackRatingCard(
+                        isLiked = isLiked,
+                        isDisliked = isDisliked,
+                        onLikeClick = {
+                            isLiked = !isLiked
+                            if (isLiked) isDisliked = false
+                        },
+                        onDislikeClick = {
+                            isDisliked = !isDisliked
+                            if (isDisliked) isLiked = false
+                        },
+                        onFeedbackClick = {
+                            // 피드백 작성 화면으로 이동
+                            if (navController != null) {
+                                navController.navigate("feedback/${userId}") {
+                                    // 백 스택 정리
+                                    popUpTo("chat/${userId}") {
+                                        inclusive = true
+                                    }
                                 }
+                            } else {
+                                val intent = Intent(context, Back::class.java)
+                                intent.putExtra("screenType", "feedback")
+                                intent.putExtra("receiverName", userName)  // 익명 이름 전달
+                                context.startActivity(intent)
                             }
-                        )
+                        }
+                    )
+                }
+                } else {
+                    item {
+                        Spacer(modifier = Modifier.height(100.dp))
                     }
                 }
-                // 피드백이 있을 때는 평가 카드와 피드백 남기기 버튼 모두 표시하지 않음
             }
         }
 
@@ -559,10 +567,13 @@ fun ChatMessageItem(message: ChatMessage) {
         ) {
             // --- 좌측 아바타: 내 메시지가 아니면 보여주기 ---
             if (!message.isFromMe) {
-                Box(
+                Image(
+                    painter = painterResource(R.drawable.example_picture),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color(0xFFFFE680), CircleShape)
+                        .clip(CircleShape)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -616,7 +627,16 @@ fun ChatMessageItem(message: ChatMessage) {
 }
 
 
-
+@Composable
+fun BlackHorizontalLine() {
+    Divider(
+        color = Color.Black,
+        thickness = 1.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    )
+}
 
 @Composable
 fun ExpandableFabExample(
@@ -707,9 +727,10 @@ class Back : ComponentActivity() {
                 val userId = intent.getStringExtra("userId") ?: "rabbit"
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
                 val feedbackViewModel = viewModel<FeedbackViewModel>()
+                val votingcontainerViewModel = viewModel<VotingContainerViewModel>()
 
                 when (screenType) {
-                    "inbox" -> InboxScreen(navController)
+                    "inbox" -> InboxScreen(navController,  votingcontainerViewModel = votingcontainerViewModel)
                     "chat" -> ChatScreen(navController, userId = userId, feedbackViewModel = feedbackViewModel)
                     "feedback" -> {
                         val receiverName = intent.getStringExtra("receiverName") ?: ""
@@ -755,6 +776,7 @@ class FeedbackViewModel : ViewModel() {
         _userFeedback.value = null
     }
 }
+
 
 @Composable
 fun FeedbackWriteScreen(navController: NavController, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel()) {
