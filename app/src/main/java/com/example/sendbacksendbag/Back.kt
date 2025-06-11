@@ -50,6 +50,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.sendbacksendbag.communication.GeminiTranslator
 import com.example.sendbacksendbag.ui.theme.SendBackSendBagTheme
 import com.example.sendbacksendbag.ui.voting.Poll
 import kotlinx.coroutines.launch
@@ -755,7 +756,7 @@ class FeedbackViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // GeminiTranslator를 사용하여 피드백 변환
-                val transformedFeedback = com.example.sendbacksendbag.communication.GeminiTranslator.generateComment(originalFeedback)
+                val transformedFeedback = GeminiTranslator.generateComment(originalFeedback)
                 _userFeedback.value = transformedFeedback
             } catch (e: Exception) {
                 Log.e("FeedbackViewModel", "Error processing feedback: ${e.message}", e)

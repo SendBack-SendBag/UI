@@ -48,7 +48,7 @@ class FriendsRepository(private val context: Context) {
     // === 데이터 로드 ===
     // 내 프로필 로드
     private fun loadMyProfile(): ProfileData {
-        val name = sharedPreferences.getString(KEY_NAME, "내 이름") ?: "내 이름"
+        val name = sharedPreferences.getString(KEY_NAME, "김학생") ?: "김학생"
         val arrivalTimeLabel = sharedPreferences.getString(KEY_ARRIVAL_TIME_LABEL, "메시지 도착 시각") ?: "메시지 도착 시각"
         val arrivalTime = sharedPreferences.getString(KEY_ARRIVAL_TIME, "20 : 00") ?: "20 : 00"
         val statusMessage = sharedPreferences.getString(KEY_STATUS_MESSAGE, "오늘도 화이팅!") ?: "오늘도 화이팅!"
