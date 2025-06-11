@@ -44,12 +44,11 @@ class FriendsRepository(private val context: Context) {
 
     private val _comments = MutableStateFlow<List<CommentData>>(loadComments())
     val comments: StateFlow<List<CommentData>> = _comments.asStateFlow()
-    private val pollCommentsMap = mutableMapOf<String, MutableStateFlow<List<CommentData>>>()
 
     // === 데이터 로드 ===
     // 내 프로필 로드
     private fun loadMyProfile(): ProfileData {
-        val name = sharedPreferences.getString(KEY_NAME, "내 이름") ?: "내 이름"
+        val name = sharedPreferences.getString(KEY_NAME, "김학생") ?: "김학생"
         val arrivalTimeLabel = sharedPreferences.getString(KEY_ARRIVAL_TIME_LABEL, "메시지 도착 시각") ?: "메시지 도착 시각"
         val arrivalTime = sharedPreferences.getString(KEY_ARRIVAL_TIME, "20 : 00") ?: "20 : 00"
         val statusMessage = sharedPreferences.getString(KEY_STATUS_MESSAGE, "오늘도 화이팅!") ?: "오늘도 화이팅!"
@@ -260,40 +259,4 @@ class FriendsRepository(private val context: Context) {
         }
     }
 
-    /**
-     * 특정 투표 화면의 댓글 목록을 가져옵니다.
-     * 해당 투표 ID에 대한 댓글이 없으면 빈 목록으로 초기화합니다.
-     */
-    fun getCommentsForPoll(pollId: String): StateFlow<List<CommentData>> {
-        if (!pollCommentsMap.containsKey(pollId)) {
-            initializeCommentsForPoll(pollId)
-        }
-        return pollCommentsMap[pollId]!!.asStateFlow()
-    }
-
-    /**
-     * 특정 투표 화면의 댓글 목록을 초기화합니다.
-     * 이미 존재하는 경우 기존 댓글을 유지합니다.
-     */
-    fun initializeCommentsForPoll(pollId: String) {
-        if (!pollCommentsMap.containsKey(pollId)) {
-            pollCommentsMap[pollId] = MutableStateFlow(emptyList())
-        }
-    }
-
-    /**
-     * 특정 투표 화면에 댓글을 추가하고 저장합니다.
-     */
-    fun addCommentAndSaveForPoll(pollId: String, comment: CommentData) {
-        if (!pollCommentsMap.containsKey(pollId)) {
-            initializeCommentsForPoll(pollId)
-        }
-
-        val currentComments = pollCommentsMap[pollId]!!.value.toMutableList()
-        currentComments.add(comment)
-        pollCommentsMap[pollId]!!.value = currentComments
-
-        // 여기에 필요한 경우 데이터 영구 저장 로직 추가 가능
-        // 예: 로컬 데이터베이스나 서버에 저장
-    }
 }
