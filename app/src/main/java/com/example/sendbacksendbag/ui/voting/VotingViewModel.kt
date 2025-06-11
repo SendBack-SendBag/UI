@@ -3,19 +3,24 @@ package com.example.sendbacksendbag.ui.voting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sendbacksendbag.communication.GeminiTranslator
+import com.example.sendbacksendbag.data.FriendsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.random.Random
-import kotlinx.serialization.Serializable // kotlinx.serialization 임포트
-import com.example.sendbacksendbag.data.FriendsRepository // FriendsRepository 임포트
+import kotlinx.serialization.Serializable
 
 // --- @Serializable 추가 ---
 @Serializable
 data class CommentData(val author: String, val text: String, val isLoading: Boolean = false)
 // --- 추가 끝 ---
+
+@Serializable
+data class PollData(
+    val id: String,
+    val title: String,
+    val comments: List<CommentData> = emptyList()
+)
 
 class VotingViewModel(
     private val repository: FriendsRepository // FriendsRepository 주입 받도록 수정
@@ -29,30 +34,33 @@ class VotingViewModel(
         "춤추는 고양이", "배고픈 수달", "코딩하는 말", "잠자는 사자",
         "현명한 올빼미", "재빠른 치타", "신비로운 유니콘"
     )
+    // 모든 투표 화면 데이터를 관리하는 맵
+    private val _pollsData = MutableStateFlow<Map<String, PollData>>(emptyMap())
+    val pollsData: StateFlow<Map<String, PollData>> = _pollsData.asStateFlow()
 
-    // --- ViewModel이 Repository의 comments를 관찰 ---
-    val comments: StateFlow<List<CommentData>> = repository.comments
-    // --- 수정 끝 ---
+    // 현재 선택된 투표 화면의 ID
+    private val _currentPollId = MutableStateFlow<String?>(null)
+    val currentPollId: StateFlow<String?> = _currentPollId.asStateFlow()
 
+    // 현재 선택된 투표 화면의 댓글 목록
+    val currentPollComments: StateFlow<List<CommentData>> = repository.getCommentsForPoll(_currentPollId.value ?: "")
+
+    // 현재 선택된 투표 화면에 댓글 추가
     fun addComment(userInput: String) {
+        val currentPoll = _currentPollId.value ?: return
         val randomAuthor = anonymousNames.random()
 
-        // --- ViewModel이 직접 상태를 관리하지 않고 Repository에 위임 ---
-        // 1. AI 호출
         viewModelScope.launch {
-            // 로딩 상태를 표시하려면 Repository에 임시 댓글 추가 요청 (선택 사항)
-            // val loadingComment = CommentData(randomAuthor, "댓글 생성 중...", true)
-            // repository.addCommentAndSave(loadingComment)
-
-            val generatedText = GeminiTranslator.generateComment(userInput)
+            val generatedText = GeminiTranslator.newComment(userInput)
             val newComment = CommentData(randomAuthor, generatedText, false)
 
-            // 2. Repository를 통해 댓글 추가 및 저장 요청
-            repository.addCommentAndSave(newComment)
-
-            // 로딩 상태를 사용했다면, 로딩 댓글을 실제 댓글로 교체 또는 삭제/추가
-            // repository.replaceLoadingComment(loadingComment, newComment)
+            // 현재 선택된 투표 화면에 댓글 추가 요청
+            repository.addCommentAndSaveForPoll(currentPoll, newComment)
         }
-        // --- 수정 끝 ---
+    }
+
+    // 특정 투표 화면의 댓글 목록 가져오기
+    fun getCommentsForPoll(pollId: String): StateFlow<List<CommentData>> {
+        return repository.getCommentsForPoll(pollId)
     }
 }

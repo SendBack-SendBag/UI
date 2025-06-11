@@ -38,7 +38,7 @@ fun HomeScreen(
 
         ) {
             TopAppBar(
-                title = { Text(text = "send back", fontWeight = FontWeight.Black,fontSize = 30.sp) },
+                title = { Text(text = "SendBack", fontWeight = FontWeight.Black,fontSize = 30.sp) },
                 actions = {
                     IconButton(onClick = onSettingsClick) {
                         Icon(

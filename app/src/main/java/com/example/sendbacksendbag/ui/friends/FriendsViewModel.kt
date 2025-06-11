@@ -23,11 +23,11 @@ class FriendsViewModel(private val repository: FriendsRepository) : ViewModel() 
     // --- 가상 사용자 데이터 (전화번호 포함) ---
     // 이 목록은 친구 추가 시 존재 여부 확인에 더 이상 사용되지 않습니다.
     private val allUsersWithPhone = listOf(
-        UserWithPhone(ProfileData(id = "user1", name = "김민준", statusMessage = "여행 가고 싶다", placeholderImageRes = R.drawable.example), "010-1111-1111"),
-        UserWithPhone(ProfileData(id = "user2", name = "이서연", statusMessage = "독서 중", placeholderImageRes = R.drawable.example2), "010-2222-2222"),
+        UserWithPhone(ProfileData(id = "user1", name = "김민준", statusMessage = "여행 가고 싶다", placeholderImageRes = R.drawable.example_picture), "010-1111-1111"),
+        UserWithPhone(ProfileData(id = "user2", name = "이서연", statusMessage = "독서 중", placeholderImageRes = R.drawable.example_picture), "010-2222-2222"),
         UserWithPhone(ProfileData(id = "user3", name = "박서준", statusMessage = "운동!", placeholderImageRes = R.drawable.example_picture), "010-3333-3333"),
-        UserWithPhone(ProfileData(id = "rabbit", name = "잠만 자는 토끼", statusMessage = "쿨쿨", placeholderImageRes = R.drawable.example2), "010-4444-4444"),
-        UserWithPhone(ProfileData(id = "horse", name = "코딩하는 말", statusMessage = "타닥타닥", placeholderImageRes = R.drawable.example2), "010-5555-5555")
+        UserWithPhone(ProfileData(id = "rabbit", name = "잠만 자는 토끼", statusMessage = "쿨쿨", placeholderImageRes = R.drawable.example_picture), "010-4444-4444"),
+        UserWithPhone(ProfileData(id = "horse", name = "코딩하는 말", statusMessage = "타닥타닥", placeholderImageRes = R.drawable.example_picture), "010-5555-5555")
     )
 
     private val _searchResults = MutableStateFlow<List<ProfileData>>(emptyList())
@@ -58,7 +58,7 @@ class FriendsViewModel(private val repository: FriendsRepository) : ViewModel() 
             val newFriendProfile = ProfileData(
                 id = newFriendId, // 전화번호를 ID로 사용
                 name = name,
-                statusMessage = "", // 기본 상태 메시지 (예: 비워두거나 "새로운 친구")
+                statusMessage = "건강한 피드백 부탁해요!", // 기본 상태 메시지 (예: 비워두거나 "새로운 친구")
                 placeholderImageRes = R.drawable.example_picture// 기본 프로필 이미지 리소스 ID (실제 리소스로 교체 필요)
             )
 

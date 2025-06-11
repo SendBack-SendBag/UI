@@ -75,7 +75,7 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
                     id = UUID.randomUUID().toString(),
                     name = receiverName,
                     anonymousName = anonymousName,
-                    avatarRes = R.drawable.example2,
+                    avatarRes = R.drawable.example_picture,
                     content = content,
                     transformedContent = transformedContent,
                     time = formattedTime,
