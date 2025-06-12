@@ -247,7 +247,7 @@ fun CommentBottomSheet(
 ) {
     var commentInput by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val comments by viewModel.currentPollComments.collectAsState()
+    val comments by viewModel.comments.collectAsState() // ViewModel에서 댓글 목록 가져오기
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
