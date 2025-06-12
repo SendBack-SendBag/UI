@@ -1,10 +1,6 @@
 package com.example.sendbacksendbag
 
-import HomeScreen // 실제 Composable import 필요
 // 실제 Composable import 필요
-import SettingsScreen // 실제 Composable import 필요
-import android.content.Context
-import android.util.Log
 import HomeScreen
 import SettingsScreen
 import androidx.compose.runtime.*
@@ -15,13 +11,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.sendbacksendbag.data.FriendsRepository
-import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.authentication.AuthViewModel
+import com.example.sendbacksendbag.data.FriendsRepository
 import com.example.sendbacksendbag.ui.friends.AddFriendScreen
 import com.example.sendbacksendbag.ui.friends.FriendsScreen
 import com.example.sendbacksendbag.ui.friends.FriendsViewModel
 import com.example.sendbacksendbag.ui.friends.FriendsViewModelFactory
+import com.example.sendbacksendbag.ui.login.AuthScreen
 import com.example.sendbacksendbag.ui.profile.ProfileScreenContainer
 import com.example.sendbacksendbag.ui.voting.*
 
@@ -153,7 +149,10 @@ fun AppNavGraph(
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
             val receiverProfile = friendsRepository.getFriendById(userId)
             val receiverName = receiverProfile?.name ?: "사용자"
-            FeedbackWriteScreen(navController = navController, receiverName = receiverName, feedbackViewModel = feedbackViewModel) // 실제 FeedbackWriteScreen Composable 사용
+            val messages by messageViewModel.messages.collectAsState()
+            val message = messages.find { it.id == userId }
+            val receivedMessage = message!!.transformedContent
+            FeedbackWriteScreen(navController = navController, receiverName = receiverName, feedbackViewModel = feedbackViewModel, receivedMessage = receivedMessage) // 실제 FeedbackWriteScreen Composable 사용
         }
         composable("settings") {
             SettingsScreen( // 실제 SettingsScreen Composable 사용

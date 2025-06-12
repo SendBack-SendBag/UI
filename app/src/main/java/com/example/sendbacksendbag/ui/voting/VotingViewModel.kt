@@ -43,11 +43,10 @@ class VotingViewModel(
     val currentPollId: StateFlow<String?> = _currentPollId.asStateFlow()
 
     // 현재 선택된 투표 화면의 댓글 목록
-    val currentPollComments: StateFlow<List<CommentData>> = repository.getCommentsForPoll(_currentPollId.value ?: "")
+    val comments : StateFlow<List<CommentData>> = repository.comments
 
     // 현재 선택된 투표 화면에 댓글 추가
     fun addComment(userInput: String) {
-        val currentPoll = _currentPollId.value ?: return
         val randomAuthor = anonymousNames.random()
 
         viewModelScope.launch {
@@ -55,12 +54,8 @@ class VotingViewModel(
             val newComment = CommentData(randomAuthor, generatedText, false)
 
             // 현재 선택된 투표 화면에 댓글 추가 요청
-            repository.addCommentAndSaveForPoll(currentPoll, newComment)
+            repository.addCommentAndSave(newComment)
         }
     }
 
-    // 특정 투표 화면의 댓글 목록 가져오기
-    fun getCommentsForPoll(pollId: String): StateFlow<List<CommentData>> {
-        return repository.getCommentsForPoll(pollId)
-    }
 }
