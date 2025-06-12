@@ -723,6 +723,11 @@ class Back : ComponentActivity() {
                 val screenType = intent.getStringExtra("screenType") ?: "chat"
                 val feedbackViewModel = viewModel<FeedbackViewModel>()
                 val votingcontainerViewModel = viewModel<VotingContainerViewModel>()
+                val messageViewModel = viewModel<MessageViewModel>()
+                val messages by messageViewModel.messages.collectAsState()
+                val message = messages.find { it.id == userId }
+                val receivedMessage = message!!.transformedContent
+
 
                 when (screenType) {
                     "inbox" -> InboxScreen(navController,  votingcontainerViewModel = votingcontainerViewModel)
@@ -732,7 +737,8 @@ class Back : ComponentActivity() {
                         FeedbackWriteScreen(
                             navController,
                             receiverName = receiverName,
-                            feedbackViewModel = feedbackViewModel
+                            feedbackViewModel = feedbackViewModel,
+                            receivedMessage = receivedMessage
                         )
                     }
                 }
@@ -751,12 +757,12 @@ class FeedbackViewModel : ViewModel() {
     val isLoading: State<Boolean> = _isLoading
 
     // Gemini API를 사용하여 피드백을 변환하고 저장하는 함수
-    fun processFeedback(originalFeedback: String) {
+    fun processFeedback(originalFeedback: String, receivedMessage: String) {
         _isLoading.value = true
         viewModelScope.launch {
             try {
                 // GeminiTranslator를 사용하여 피드백 변환
-                val transformedFeedback = GeminiTranslator.generateComment(originalFeedback)
+                val transformedFeedback = GeminiTranslator.back(input = originalFeedback, send = receivedMessage)
                 _userFeedback.value = transformedFeedback
             } catch (e: Exception) {
                 Log.e("FeedbackViewModel", "Error processing feedback: ${e.message}", e)
@@ -774,7 +780,7 @@ class FeedbackViewModel : ViewModel() {
 
 
 @Composable
-fun FeedbackWriteScreen(navController: NavController, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel()) {
+fun FeedbackWriteScreen(navController: NavController, receiverName: String,  feedbackViewModel: FeedbackViewModel = viewModel(), receivedMessage: String) {
     val context = LocalContext.current
     var feedbackText by remember { mutableStateOf("") }
 
@@ -866,7 +872,7 @@ fun FeedbackWriteScreen(navController: NavController, receiverName: String,  fee
                         onClick = {
                             // 피드백 저장 후 이전 화면으로 돌아가기
                             if (feedbackText.isNotEmpty()) {
-                                feedbackViewModel.processFeedback(feedbackText)
+                                feedbackViewModel.processFeedback(feedbackText, receivedMessage)
                             }
                             if (navController != null) {
                                 navController.popBackStack()

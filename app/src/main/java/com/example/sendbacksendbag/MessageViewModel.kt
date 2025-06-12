@@ -69,7 +69,7 @@ class MessageViewModel(application: Application) : AndroidViewModel(application)
 
                 val anonymousName = messageRepository.getRandomAnonymousName()
 
-                val transformedContent = GeminiTranslator.generateComment(content)
+                val transformedContent = GeminiTranslator.send(content)
 
                 val newMessage = Message(
                     id = UUID.randomUUID().toString(),
